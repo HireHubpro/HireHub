@@ -1,9 +1,31 @@
 (function initHome() {
   if (!window.location.pathname.endsWith('/home.html')) return;
 
+  const feedbackId = 'homeAuthFeedback';
+
+  function showAccessMessage(message) {
+    let feedback = document.getElementById(feedbackId);
+    if (!feedback) {
+      feedback = document.createElement('div');
+      feedback.id = feedbackId;
+      feedback.className = 'auth-feedback';
+      feedback.setAttribute('role', 'alert');
+      const phone = document.querySelector('.phone') || document.body;
+      phone.prepend(feedback);
+    }
+    feedback.textContent = message;
+  }
+
+  function redirectToLogin(message) {
+    showAccessMessage(message);
+    setTimeout(() => {
+      window.location.href = '/login.html';
+    }, 1800);
+  }
+
   const token = localStorage.getItem('token');
   if (!token) {
-    window.location.href = '/login.html';
+    redirectToLogin('Your session is missing. Please sign in to continue.');
     return;
   }
 
@@ -24,8 +46,12 @@
       document.getElementById('headlineInput').value = data.headline || '';
       document.getElementById('locationInput').value = data.location || '';
     })
-    .catch(() => {
+    .catch((error) => {
+      const reason = error?.message || 'Unable to verify your session.';
+      showAccessMessage(`Unable to load your profile: ${reason} Redirecting to login...`);
       localStorage.removeItem('token');
-      window.location.href = '/login.html';
+      setTimeout(() => {
+        window.location.href = '/login.html';
+      }, 1800);
     });
 })();
