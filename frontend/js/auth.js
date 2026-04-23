@@ -14,6 +14,8 @@ byId('goLogin')?.addEventListener('click', () => {
 
 document.querySelectorAll('.role-card').forEach((card) => {
   card.addEventListener('click', () => {
+    document.querySelectorAll('.role-card').forEach((c) => c.classList.remove('selected'));
+    card.classList.add('selected');
     const role = card.dataset.role;
     sessionStorage.setItem('selected_role', role);
     window.location.href = '/signup.html';

@@ -3,19 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign Up</title>
+    <title>HireHub | Sign Up</title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <main class="phone">
-      <h2>Create your account</h2>
-      <p id="selectedRole" class="tag"></p>
+    <main class="phone screen">
+      <div class="top-time">9:41</div>
+      <a href="/choose-role.html" class="back-btn" aria-label="Go back">←</a>
+      <h2 class="screen-title">Create your account</h2>
+      <p class="tag">Let's get you started</p>
+      <p id="selectedRole" class="tag selected-role"></p>
+
       <form id="signupForm" class="form">
-        <input name="fullName" placeholder="Full name" required />
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Password" minlength="8" required />
+        <label>Full Name <input name="fullName" placeholder="Enter your full name" required /></label>
+        <label>Email <input type="email" name="email" placeholder="Enter your email" required /></label>
+        <label>Password <input type="password" name="password" placeholder="Create a password" minlength="8" required /></label>
         <button class="btn btn-primary" type="submit">Create Account</button>
       </form>
+      <p class="terms">By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
       <p id="authError" class="error"></p>
     </main>
     <script src="/js/auth.js"></script>
