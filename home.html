@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HireHub - Home</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <main class="screen">
+      <header class="topbar">
+        <div class="logo-mini">HireHub</div>
+        <div class="icon-row">
+          <button class="icon-btn">💬</button>
+          <button class="icon-btn">🔔</button>
+        </div>
+      </header>
+
+      <section class="card composer">
+        <textarea id="postInput" placeholder="What's on your mind?"></textarea>
+        <div class="composer-actions"><span>📝 Post</span><span>💼 Job</span><span>📄 Article</span></div>
+        <button id="addPostBtn" class="btn btn-primary">Post Text</button>
+      </section>
+
+      <section id="feedPosts" class="feed"></section>
+
+      <aside id="profilePanel" class="panel">
+        <div class="cover"></div>
+        <div class="panel-head">
+          <strong>Profile</strong>
+          <button id="closePanel" class="icon-btn">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <strong id="panelName"></strong>
+            <span id="panelRole" class="tag"></span>
+          </div>
+          <div id="panelHeadline"></div>
+          <div id="panelLocation" class="muted"></div>
+
+          <div class="card">
+            <div class="row"><strong>About Myself</strong></div>
+            <textarea id="aboutInput" rows="3"></textarea>
+          </div>
+
+          <div class="card">
+            <label>Headline</label>
+            <input id="headlineInput" />
+            <label>Location</label>
+            <input id="locationInput" />
+            <button id="saveProfile" class="btn btn-outline" style="margin-top:8px">Save Profile</button>
+          </div>
+
+          <div class="card">
+            <div class="row"><strong>Experience</strong></div>
+            <div class="inline-add"><input id="experienceInput" placeholder="e.g. Product Designer" /><button id="addExperienceBtn" class="btn btn-outline">Add</button></div>
+            <div id="experiencePills" class="pill-wrap"></div>
+          </div>
+
+          <div class="card">
+            <div class="row"><strong>Education</strong></div>
+            <div class="inline-add"><input id="educationInput" placeholder="e.g. BCA" /><button id="addEducationBtn" class="btn btn-outline">Add</button></div>
+            <div id="educationPills" class="pill-wrap"></div>
+          </div>
+
+          <div class="card">
+            <div class="row"><strong>Skills</strong></div>
+            <div class="inline-add"><input id="skillsInput" placeholder="e.g. JavaScript" /><button id="addSkillsBtn" class="btn btn-outline">Add</button></div>
+            <div id="skillsPills" class="pill-wrap"></div>
+          </div>
+
+          <div class="card">
+            <div class="row"><strong>Edit My Posts</strong></div>
+            <div id="profilePosts"></div>
+          </div>
+        </div>
+      </aside>
+
+      <div id="backdrop" class="backdrop"></div>
+
+      <nav class="bottom-nav">
+        <button class="active">🏠 Home</button>
+        <button>➕ Post</button>
+        <button>📥 Inbox</button>
+        <button id="profileBtn">👤 Profile</button>
+      </nav>
+    </main>
+
+    <script src="js/store.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
