@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HireHub Home</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <main class="phone home-layout">
+      <header class="home-header">
+        <h2>HireHub</h2>
+        <div class="header-actions">
+          <button class="icon-btn">Post</button>
+          <button class="icon-btn">Inbox</button>
+          <button id="profileBtn" class="icon-btn">Profile</button>
+        </div>
+      </header>
+
+      <section class="feed">
+        <article class="card">
+          <h3 id="welcomeName">Welcome</h3>
+          <p id="roleText"></p>
+        </article>
+        <article class="card">
+          <h3>What’s on your mind?</h3>
+          <p>Start posting updates, job needs, and professional insights.</p>
+        </article>
+      </section>
+
+      <aside id="profilePanel" class="profile-panel" aria-hidden="true">
+        <div class="panel-head">
+          <h3>Profile</h3>
+          <button id="closePanel" class="icon-btn">✕</button>
+        </div>
+        <div class="panel-body">
+          <p><strong id="panelName"></strong></p>
+          <p id="panelHeadline"></p>
+          <p id="panelLocation"></p>
+
+          <label>About</label>
+          <textarea id="aboutInput" rows="4"></textarea>
+
+          <label>Headline</label>
+          <input id="headlineInput" />
+
+          <label>Location</label>
+          <input id="locationInput" />
+
+          <button id="saveProfile" class="btn btn-primary">Save Profile</button>
+        </div>
+      </aside>
+      <div id="backdrop" class="backdrop"></div>
+    </main>
+
+    <script src="/js/home.js"></script>
+    <script src="/js/profile-panel.js"></script>
+  </body>
+</html>
