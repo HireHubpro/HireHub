@@ -14,19 +14,28 @@ profileBtn?.addEventListener('click', () => setOpen(true));
 closePanel?.addEventListener('click', () => setOpen(false));
 backdrop?.addEventListener('click', () => setOpen(false));
 
-saveProfile?.addEventListener('click', () => {
+saveProfile?.addEventListener('click', async () => {
+  const token = localStorage.getItem('token');
   const payload = {
     about: document.getElementById('aboutInput').value,
     headline: document.getElementById('headlineInput').value,
     location: document.getElementById('locationInput').value,
   };
 
-  try {
-    const user = updateCurrentUserProfile(payload);
-    document.getElementById('panelHeadline').textContent = user.profile.headline;
-    document.getElementById('panelLocation').textContent = user.profile.location;
+  const res = await fetch('/api/user/profile', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (res.ok) {
+    document.getElementById('panelHeadline').textContent = payload.headline;
+    document.getElementById('panelLocation').textContent = payload.location;
     alert('Profile updated');
-  } catch (err) {
-    alert(err.message || 'Failed to update profile');
+  } else {
+    alert('Failed to update profile');
   }
 });

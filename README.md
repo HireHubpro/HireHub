@@ -1,24 +1,14 @@
-# HireHub Starter (No Setup Required for UI Demo)
+# HireHub Starter
 
-You asked for a version that works as webpages without running backend commands each time.
+LinkedIn-like starter app with:
+- Landing / role selection / signup / login
+- Home feed with profile slide-in panel
+- Node.js + Express API
+- MySQL schema for users and profile data
 
-## Quick Start (just open pages)
-1. Open `frontend/index.html` directly in browser.
-2. Use Sign Up / Log In flow.
-3. Data is stored in `localStorage` (browser-only demo mode).
-
-No required steps like:
-- `cp .env.example .env`
-- `npm install`
-- `npm run dev`
-
-## What works in webpage-only mode
-- Landing screen
-- Role selection (Applicant / Hirer)
-- Signup + Login
-- Home screen
-- Profile slide panel with edit/save
-
-## Notes
-- This mode is frontend-only and does not require Node/MySQL.
-- Existing backend and Docker files are still available if you later want full server + DB mode.
+## Run
+1. `cp .env.example .env`
+2. Update DB credentials
+3. `npm install`
+4. `npm run dev`
+5. Open `http://localhost:3000`

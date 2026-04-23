@@ -1,20 +1,29 @@
 (function initHome() {
-  if (!window.location.pathname.endsWith('/home.html') && !window.location.pathname.endsWith('home.html')) return;
+  if (!window.location.pathname.endsWith('/home.html')) return;
 
-  const user = getCurrentUser();
-  if (!user) {
-    window.location.href = 'login.html';
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = '/login.html';
     return;
   }
 
-  document.getElementById('welcomeName').textContent = `Welcome, ${user.fullName}`;
-  document.getElementById('roleText').textContent = user.role;
-  const panelRole = document.getElementById('panelRole');
-  if (panelRole) panelRole.textContent = user.role;
-  document.getElementById('panelName').textContent = user.fullName;
-  document.getElementById('panelHeadline').textContent = user.profile?.headline || '';
-  document.getElementById('panelLocation').textContent = user.profile?.location || '';
-  document.getElementById('aboutInput').value = user.profile?.about || '';
-  document.getElementById('headlineInput').value = user.profile?.headline || '';
-  document.getElementById('locationInput').value = user.profile?.location || '';
+  fetch('/api/user/me', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then(async (res) => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to load user');
+      document.getElementById('welcomeName').textContent = `Welcome, ${data.fullName}`;
+      document.getElementById('roleText').textContent = `Role: ${data.role}`;
+      document.getElementById('panelName').textContent = data.fullName;
+      document.getElementById('panelHeadline').textContent = data.headline || '';
+      document.getElementById('panelLocation').textContent = data.location || '';
+      document.getElementById('aboutInput').value = data.about || '';
+      document.getElementById('headlineInput').value = data.headline || '';
+      document.getElementById('locationInput').value = data.location || '';
+    })
+    .catch(() => {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
+    });
 })();
