@@ -1,29 +1,29 @@
-const API_BASE = window.HIREHUB_API_BASE || window.location.origin;
+const API_BASE = window.location.origin;
 
 function byId(id) {
   return document.getElementById(id);
 }
 
 byId('goSignup')?.addEventListener('click', () => {
-  window.location.href = 'choose-role.html';
+  window.location.href = '/choose-role.html';
 });
 
 byId('goLogin')?.addEventListener('click', () => {
-  window.location.href = 'login.html';
+  window.location.href = '/login.html';
 });
 
 document.querySelectorAll('.role-card').forEach((card) => {
   card.addEventListener('click', () => {
     const role = card.dataset.role;
     sessionStorage.setItem('selected_role', role);
-    window.location.href = 'signup.html';
+    window.location.href = '/signup.html';
   });
 });
 
 const selectedRole = sessionStorage.getItem('selected_role');
-if (window.location.pathname.endsWith('signup.html')) {
+if (window.location.pathname.endsWith('/signup.html')) {
   if (!selectedRole) {
-    window.location.href = 'choose-role.html';
+    window.location.href = '/choose-role.html';
   } else {
     byId('selectedRole').textContent = `Signing up as: ${selectedRole}`;
   }
@@ -52,9 +52,9 @@ byId('signupForm')?.addEventListener('submit', async (e) => {
     if (!res.ok) throw new Error(data.message || 'Signup failed');
     localStorage.setItem('token', data.token);
     sessionStorage.removeItem('selected_role');
-    window.location.href = 'home.html';
+    window.location.href = '/home.html';
   } catch (err) {
-    errorEl.textContent = `${err.message}. If this is GitHub Pages, configure window.HIREHUB_API_BASE to your backend URL.`;
+    errorEl.textContent = err.message;
   }
 });
 
@@ -78,8 +78,8 @@ byId('loginForm')?.addEventListener('submit', async (e) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Login failed');
     localStorage.setItem('token', data.token);
-    window.location.href = 'home.html';
+    window.location.href = '/home.html';
   } catch (err) {
-    errorEl.textContent = `${err.message}. If this is GitHub Pages, configure window.HIREHUB_API_BASE to your backend URL.`;
+    errorEl.textContent = err.message;
   }
 });
