@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HireHub Home</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <main class="phone home-layout">
+      <header class="home-header">
+        <div class="logo-small">HireHub</div>
+        <div class="header-actions">
+          <button class="icon-btn">💬</button>
+          <button class="icon-btn">🔔</button>
+        </div>
+      </header>
+
+      <section class="card composer">
+        <div class="composer-top">What's on your mind?</div>
+        <div class="composer-actions">
+          <span>📝 Post</span>
+          <span>💼 Job</span>
+          <span>📄 Article</span>
+        </div>
+      </section>
+
+      <section class="feed">
+        <article class="card">
+          <div class="post-head">
+            <strong id="welcomeName">Welcome</strong>
+            <span id="roleText"></span>
+          </div>
+          <div class="post-title">Excited to share my latest UI/UX progress</div>
+          <div class="post-body">
+            Let me know your thoughts! This feed card mirrors the intended product style from your design.
+          </div>
+        </article>
+      </section>
+
+      <aside id="profilePanel" class="profile-panel" aria-hidden="true">
+        <div class="panel-cover"></div>
+        <div class="panel-head">
+          <strong>Profile</strong>
+          <button id="closePanel" class="icon-btn">✕</button>
+        </div>
+
+        <div class="panel-body">
+          <div class="panel-row">
+            <strong id="panelName"></strong>
+            <span class="tag" id="panelRole">Member</span>
+          </div>
+          <div id="panelHeadline"></div>
+          <div id="panelLocation" class="subtext" style="margin:0"></div>
+
+          <div class="panel-section">
+            <div class="panel-row"><strong>About Myself</strong></div>
+            <textarea id="aboutInput" rows="4"></textarea>
+          </div>
+
+          <div class="panel-section">
+            <label>Headline</label>
+            <input id="headlineInput" />
+            <label>Location</label>
+            <input id="locationInput" />
+          </div>
+
+          <button id="saveProfile" class="btn btn-primary">Save Profile</button>
+        </div>
+      </aside>
+
+      <div id="backdrop" class="backdrop"></div>
+
+      <nav class="bottom-nav">
+        <button class="active">Home</button>
+        <button>Post</button>
+        <button>Inbox</button>
+        <button id="profileBtn">Profile</button>
+      </nav>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/home.js"></script>
+    <script src="js/profile-panel.js"></script>
+  </body>
+</html>
