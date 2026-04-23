@@ -89,6 +89,7 @@ body {
 .post-head p { margin: 2px 0 0; color: #667085; }
 .post-media { height: 170px; border-radius: 12px; background: linear-gradient(135deg, #eff3ff, #dbe6ff); margin-top: 12px; }
 .post-actions { margin-top: 10px; color: #667085; display: flex; gap: 10px; align-items: center; }
+.post-text { margin: 10px 0 0; line-height: 1.5; color: #344054; white-space: pre-wrap; }
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -118,6 +119,68 @@ body {
 .panel-body { padding: 14px; display: grid; gap: 10px; margin-top: -34px; }
 .avatar.profile { width: 74px; height: 74px; border: 3px solid #fff; }
 .pill { border: 1px solid #9db9ff; color: var(--primary); border-radius: 10px; padding: 2px 8px; font-size: 13px; }
+.panel-profile-top { position: relative; width: fit-content; }
+.panel-camera,
+.avatar-camera {
+  border: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+}
+.panel-camera { position: absolute; right: 14px; bottom: 14px; }
+.avatar-camera { position: absolute; right: -8px; bottom: 0; }
+.panel-name-row { margin: 2px 0 0; display: flex; gap: 8px; align-items: center; }
+.panel-section-head {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.edit-link {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+.panel-preview {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  color: #475467;
+  margin: 0;
+  line-height: 1.4;
+}
+.edit-field { display: none; }
+.edit-field.show { display: block; }
+.resume-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+}
+.resume-name { font-weight: 600; font-size: 14px; color: #1f2937; }
+.resume-meta { color: #667085; font-size: 13px; }
+.resume-download {
+  border: 0;
+  background: transparent;
+  grid-row: 1 / span 2;
+  color: #667085;
+  font-size: 18px;
+  cursor: pointer;
+}
+.panel-nav-item {
+  border-top: 1px solid var(--line);
+  padding: 12px 2px;
+  display: flex;
+  justify-content: space-between;
+  color: #475467;
+}
+.panel-nav-item:last-of-type { border-bottom: 1px solid var(--line); }
 .backdrop {
   position: fixed;
   inset: 0;
