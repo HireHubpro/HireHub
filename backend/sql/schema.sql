@@ -1,0 +1,23 @@
+CREATE DATABASE IF NOT EXISTS hirehub;
+USE hirehub;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  full_name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('applicant','hirer') NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS profiles (
+  user_id BIGINT PRIMARY KEY,
+  headline VARCHAR(180) DEFAULT '',
+  about TEXT,
+  location VARCHAR(120) DEFAULT '',
+  resume_url VARCHAR(255),
+  avatar_url VARCHAR(255),
+  cover_url VARCHAR(255),
+  CONSTRAINT fk_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
