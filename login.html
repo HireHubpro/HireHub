@@ -7,14 +7,23 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <main class="screen">
-      <h1 class="h1">Log in to HireHub</h1>
-      <form id="loginForm" class="form">
-        <input name="email" type="email" placeholder="Email" required />
-        <input name="password" type="password" placeholder="Password" required />
-        <button class="btn btn-primary" type="submit">Log In</button>
-      </form>
-      <div id="authError" class="error"></div>
+    <main class="mobile-screen">
+      <section class="screen-content">
+        <div class="status-bar"><span>9:41</span><span class="status-icons">◉ ◖ ▮</span></div>
+        <h1>Welcome back</h1>
+        <p class="subtitle">Log in to continue</p>
+        <form id="loginForm" class="auth-form">
+          <label>Email</label>
+          <input name="email" type="email" placeholder="Enter your email" required />
+          <label>Password</label>
+          <div class="input-wrap">
+            <input id="loginPassword" name="password" type="password" placeholder="Enter password" required />
+            <button type="button" id="toggleLoginPassword" class="input-action">👁</button>
+          </div>
+          <button class="btn btn-primary" type="submit">Log In</button>
+        </form>
+        <div id="authError" class="error"></div>
+      </section>
     </main>
     <script src="js/store.js"></script>
     <script src="js/app.js"></script>

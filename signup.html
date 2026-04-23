@@ -7,20 +7,31 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <main class="screen">
-      <h1 class="h1">Create your account</h1>
-      <div id="selectedRole" class="tag"></div>
-      <form id="signupForm" class="form">
-        <input name="fullName" placeholder="Full Name" required />
-        <input name="email" type="email" placeholder="Email" required />
-        <input name="password" type="password" placeholder="Password" minlength="6" required />
-        <button class="btn btn-primary" type="submit">Create Account</button>
-      </form>
-      <div id="authError" class="error"></div>
+    <main class="mobile-screen">
+      <section class="screen-content">
+        <div class="status-bar"><span>9:41</span><span class="status-icons">◉ ◖ ▮</span></div>
+        <div class="nav-top"><button onclick="history.back()" class="icon-btn">←</button></div>
+        <h1>Create your account</h1>
+        <p class="subtitle">Let's get you started</p>
+
+        <div id="selectedRole" class="tiny"></div>
+        <form id="signupForm" class="auth-form">
+          <label>Full Name</label>
+          <input name="fullName" placeholder="Enter your full name" required />
+          <label>Email</label>
+          <input name="email" type="email" placeholder="Enter your email" required />
+          <label>Password</label>
+          <div class="input-wrap">
+            <input id="signupPassword" name="password" type="password" placeholder="Create a password" minlength="6" required />
+            <button type="button" id="toggleSignupPassword" class="input-action">👁</button>
+          </div>
+          <button class="btn btn-primary" type="submit">Create Account</button>
+          <div class="error" id="authError"></div>
+          <p class="legal">By signing up, you agree to our <a class="link" href="#">Terms of Service</a> and <a class="link" href="#">Privacy Policy</a>.</p>
+        </form>
+      </section>
     </main>
     <script src="js/store.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sign Up</title><link rel="stylesheet" href="css/styles.css"></head>
-<body><main class="app"><div class="h2">Create your account</div><div id="selectedRole" class="tag"></div><form id="signupForm" class="form"><input name="fullName" placeholder="Full name" required><input name="email" type="email" placeholder="Email" required><input name="password" type="password" placeholder="Create a password" minlength="6" required><button class="btn btn-primary" type="submit">Create Account</button></form><div id="authError" class="error"></div></main><script src="js/store.js"></script><script src="js/app.js"></script></body></html>
