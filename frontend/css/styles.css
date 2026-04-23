@@ -1,0 +1,198 @@
+:root {
+  --primary: #0a66ff;
+  --bg: #f3f4f6;
+  --text: #111827;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --border: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.phone {
+  width: min(390px, 100vw);
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #fff;
+  padding: 20px 16px;
+}
+
+.brand {
+  font-size: 34px;
+  margin: 6px 0 36px;
+  color: var(--primary);
+}
+.hero {
+  margin-top: 180px;
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.hero span { color: var(--primary); }
+.subtext {
+  color: var(--muted);
+  font-size: 16px;
+  margin: 14px 0 24px;
+}
+
+.btn-col { display: grid; gap: 10px; margin-top: 18px; }
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-secondary { background: #eef2ff; color: #0f172a; }
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  padding: 14px;
+}
+
+h2 { margin: 4px 0 16px; }
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  background: #eef4ff;
+  color: #1e3a8a;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+}
+
+.role-list { display: grid; gap: 12px; }
+.role-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.role-card .role-title { font-weight: 700; margin-bottom: 4px; }
+.role-card .role-desc { color: var(--muted); font-size: 14px; }
+.role-card .arrow { color: #9ca3af; font-size: 20px; }
+.role-card:hover { border-color: var(--primary); }
+.link { display: block; margin-top: 16px; color: var(--primary); text-decoration: none; }
+
+.form { display: grid; gap: 10px; }
+.form input, .form textarea, textarea, input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  outline: none;
+}
+.form input:focus, .form textarea:focus { border-color: var(--primary); }
+.error { min-height: 20px; color: #dc2626; font-size: 13px; }
+
+.home-layout {
+  position: relative;
+  padding-bottom: 80px;
+}
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.logo-small {
+  color: var(--primary);
+  font-size: 30px;
+  font-weight: 800;
+}
+.header-actions { display: flex; gap: 8px; }
+.icon-btn {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fff;
+  cursor: pointer;
+}
+.composer {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.composer-top {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  color: #9ca3af;
+}
+.composer-actions {
+  display: flex;
+  justify-content: space-between;
+  color: #4b5563;
+  font-size: 14px;
+}
+.feed { display: grid; gap: 12px; }
+.post-head { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); }
+.post-title { font-size: 18px; margin: 10px 0 8px; }
+.post-body { color: #374151; line-height: 1.45; }
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(390px, 100vw);
+  border-top: 1px solid var(--border);
+  background: #fff;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.bottom-nav button {
+  background: transparent;
+  border: 0;
+  padding: 10px 4px;
+  color: #6b7280;
+}
+.bottom-nav button.active { color: var(--primary); font-weight: 700; }
+
+.profile-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(390px, 100vw);
+  height: 100vh;
+  background: #fff;
+  transform: translateX(100%);
+  transition: transform .22s ease;
+  z-index: 20;
+}
+.profile-panel.open { transform: translateX(0); }
+.panel-cover {
+  height: 132px;
+  background: linear-gradient(120deg, #4338ca, #0ea5e9);
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+}
+.panel-body { padding: 14px; display: grid; gap: 10px; }
+.panel-section { border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+.panel-row { display: flex; justify-content: space-between; align-items: center; }
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+  z-index: 10;
+}
+.backdrop.show { opacity: 1; pointer-events: auto; }
