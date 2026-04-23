@@ -13,9 +13,10 @@
     .then(async (res) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to load user');
-      document.getElementById('welcomeName').textContent = `Welcome, ${data.fullName}`;
-      document.getElementById('roleText').textContent = `Role: ${data.role}`;
+      document.getElementById('welcomeName').textContent = data.fullName;
+      document.getElementById('roleText').textContent = data.headline || `${data.role}`;
       document.getElementById('panelName').textContent = data.fullName;
+      document.getElementById('panelRole').textContent = data.role;
       document.getElementById('panelHeadline').textContent = data.headline || '';
       document.getElementById('panelLocation').textContent = data.location || '';
       document.getElementById('aboutInput').value = data.about || '';

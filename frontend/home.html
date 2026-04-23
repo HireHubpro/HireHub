@@ -8,45 +8,57 @@
   </head>
   <body>
     <main class="phone home-layout">
-      <header class="home-header">
-        <h2>HireHub</h2>
-        <div class="header-actions">
-          <button class="icon-btn">Post</button>
-          <button class="icon-btn">Inbox</button>
-          <button id="profileBtn" class="icon-btn">Profile</button>
+      <div class="top-time">9:41</div>
+      <header class="home-header card soft">
+        <h2 class="brand">Hire<span>Hub</span></h2>
+        <div class="header-icons">
+          <button class="ghost">💬</button>
+          <button class="ghost">🔔</button>
         </div>
+        <div class="composer">
+          <div class="avatar small"></div>
+          <input placeholder="What's on your mind?" />
+        </div>
+        <nav class="quick-actions">
+          <button>Post</button><button>Job</button><button>Article</button>
+        </nav>
       </header>
 
       <section class="feed">
-        <article class="card">
-          <h3 id="welcomeName">Welcome</h3>
-          <p id="roleText"></p>
-        </article>
-        <article class="card">
-          <h3>What’s on your mind?</h3>
-          <p>Start posting updates, job needs, and professional insights.</p>
+        <article class="card post">
+          <div class="post-head">
+            <div class="avatar"></div>
+            <div>
+              <strong id="welcomeName">Rohit Sharma</strong>
+              <p id="roleText">Product Designer</p>
+            </div>
+            <span>⋯</span>
+          </div>
+          <p>Excited to share my latest UI/UX case study on improving user onboarding experience for a SaaS product. Let me know your thoughts!</p>
+          <div class="post-media"></div>
+          <div class="post-actions">👍 ❤️ 👏 <span>120</span> <span>12 Comments</span></div>
         </article>
       </section>
 
+      <nav class="bottom-nav">
+        <button>Home</button><button>Post</button><button>Inbox</button><button id="profileBtn">Profile</button>
+      </nav>
+
       <aside id="profilePanel" class="profile-panel" aria-hidden="true">
-        <div class="panel-head">
-          <h3>Profile</h3>
-          <button id="closePanel" class="icon-btn">✕</button>
+        <div class="panel-cover">
+          <button id="closePanel" class="close">✕</button>
         </div>
         <div class="panel-body">
-          <p><strong id="panelName"></strong></p>
-          <p id="panelHeadline"></p>
-          <p id="panelLocation"></p>
-
-          <label>About</label>
+          <div class="avatar profile"></div>
+          <p><strong id="panelName">Rohit Sharma</strong> <span class="pill" id="panelRole">Applicant</span></p>
+          <p id="panelHeadline">Product Designer at DesignX</p>
+          <p id="panelLocation">Bengaluru, India</p>
+          <label>About Myself</label>
           <textarea id="aboutInput" rows="4"></textarea>
-
           <label>Headline</label>
           <input id="headlineInput" />
-
           <label>Location</label>
           <input id="locationInput" />
-
           <button id="saveProfile" class="btn btn-primary">Save Profile</button>
         </div>
       </aside>
