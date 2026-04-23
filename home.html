@@ -24,10 +24,10 @@
       <section class="card composer">
         <div class="composer-head">
           <div id="composerAvatar" class="avatar">U</div>
-          <input id="postInput" placeholder="What's on your mind?" />
+          <input id="postInput" placeholder="Share a text post..." />
         </div>
         <div class="composer-actions">
-          <div class="composer-btn" id="postTextBtn"><span style="color:#155eef">▣</span>Post</div>
+          <div class="composer-btn" id="postTextBtn"><span style="color:#155eef">▣</span>Text Post</div>
           <div class="composer-btn"><span style="color:#16a34a">▣</span>Job</div>
           <div class="composer-btn"><span style="color:#f59e0b">▣</span>Article</div>
         </div>
@@ -45,11 +45,16 @@
 
     <aside id="profilePanel" class="profile-panel">
       <div class="status-bar" style="padding:10px 16px 0;"><span>9:41</span><span class="status-icons">◉ ◖ ▮</span></div>
-      <div class="cover"></div>
+      <div class="cover">
+        <button class="panel-camera-btn">📷</button>
+      </div>
       <div class="panel-section">
         <div style="display:flex; justify-content:flex-end; margin-top:-122px; position:relative; z-index:2;"><button id="closePanel" class="icon-btn" style="color:#fff">✕</button></div>
         <div class="profile-head">
-          <div id="panelAvatar" class="profile-avatar">U</div>
+          <div class="avatar-shell">
+            <div id="panelAvatar" class="profile-avatar">U</div>
+            <button class="avatar-camera-btn">📷</button>
+          </div>
           <div>
             <div style="display:flex; align-items:center; gap:8px;"><h2 id="panelName" style="margin:0; font-size:34px;">User</h2><span id="panelRole" class="badge">Applicant</span></div>
             <p id="panelHeadline" style="margin:4px 0 0; color:#475467;">Product Designer</p>
@@ -57,16 +62,21 @@
           </div>
         </div>
 
-        <div class="section-head"><span>About Myself</span><button id="saveProfile" class="icon-btn" style="color:#155eef; width:auto; height:auto;">Save</button></div>
+        <div class="section-head">
+          <span>About Myself</span>
+          <button type="button" class="link edit-toggle" data-section="about">Edit</button>
+        </div>
         <div class="card profile-card">
-          <textarea id="aboutInput" rows="4" placeholder="Tell people about yourself"></textarea>
-          <div class="inline-input">
-            <input id="headlineInput" placeholder="Headline" />
-            <input id="locationInput" placeholder="Location" />
+          <p id="aboutPreview" class="about-preview"></p>
+          <textarea id="aboutInput" class="edit-field" rows="4" placeholder="Tell people about yourself"></textarea>
+          <div class="inline-input edit-field-row">
+            <input id="headlineInput" class="edit-field" placeholder="Headline" />
+            <input id="locationInput" class="edit-field" placeholder="Location" />
           </div>
+          <button id="saveProfile" class="btn btn-primary" style="height:44px; font-size:16px; margin-top:10px;">Save Profile</button>
         </div>
 
-        <div class="section-head"><span>Resume</span><a class="link" href="#">Edit</a></div>
+        <div class="section-head"><span>Resume</span><button type="button" class="link">Edit</button></div>
         <div class="card profile-card"><div class="resume-row"><div><strong>Rohit_Sharma_Resume.pdf</strong><div class="tiny">PDF · 650 KB</div></div><span>⇩</span></div></div>
 
         <div class="section-head"><span>Experience</span></div>
