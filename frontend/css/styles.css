@@ -210,6 +210,44 @@ body {
   color: #475467;
 }
 .panel-nav-item:last-of-type { border-bottom: 1px solid var(--line); }
+.panel-item-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.small-btn {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.panel-list-empty {
+  color: #667085;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+}
+.panel-list-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  color: #344054;
+}
+.panel-post-editor {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+.panel-post-editor textarea {
+  min-height: 72px;
+  resize: vertical;
+}
 .backdrop {
   position: fixed;
   inset: 0;
