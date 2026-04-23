@@ -17,14 +17,14 @@
         </div>
         <div class="composer">
           <div class="avatar small"></div>
-          <input placeholder="What's on your mind?" />
+          <input id="postTextInput" maxlength="400" placeholder="What's on your mind?" />
         </div>
         <nav class="quick-actions">
-          <button>Post</button><button>Job</button><button>Article</button>
+          <button id="publishTextPostBtn">Post</button><button>Job</button><button>Article</button>
         </nav>
       </header>
 
-      <section class="feed">
+      <section id="feed" class="feed">
         <article class="card post">
           <div class="post-head">
             <div class="avatar"></div>
@@ -46,19 +46,56 @@
 
       <aside id="profilePanel" class="profile-panel" aria-hidden="true">
         <div class="panel-cover">
+          <button class="panel-camera" aria-label="Update cover photo">📷</button>
           <button id="closePanel" class="close">✕</button>
         </div>
         <div class="panel-body">
-          <div class="avatar profile"></div>
-          <p><strong id="panelName">Rohit Sharma</strong> <span class="pill" id="panelRole">Applicant</span></p>
+          <div class="panel-profile-top">
+            <div class="avatar profile"></div>
+            <button class="avatar-camera" aria-label="Update profile photo">📷</button>
+          </div>
+
+          <p class="panel-name-row">
+            <strong id="panelName">Rohit Sharma</strong>
+            <span class="pill" id="panelRole">Applicant</span>
+          </p>
           <p id="panelHeadline">Product Designer at DesignX</p>
           <p id="panelLocation">Bengaluru, India</p>
-          <label>About Myself</label>
-          <textarea id="aboutInput" rows="4"></textarea>
-          <label>Headline</label>
-          <input id="headlineInput" />
-          <label>Location</label>
-          <input id="locationInput" />
+
+          <div class="panel-section-head">
+            <label>About Myself</label>
+            <button class="edit-link" data-section="about">Edit</button>
+          </div>
+          <p id="aboutPreview" class="panel-preview"></p>
+          <textarea id="aboutInput" class="edit-field" rows="4"></textarea>
+
+          <div class="panel-section-head">
+            <label>Headline</label>
+            <button class="edit-link" data-section="headline">Edit</button>
+          </div>
+          <input id="headlineInput" class="edit-field" />
+
+          <div class="panel-section-head">
+            <label>Location</label>
+            <button class="edit-link" data-section="location">Edit</button>
+          </div>
+          <input id="locationInput" class="edit-field" />
+
+          <div class="panel-section-head">
+            <label>Resume</label>
+            <button class="edit-link">Edit</button>
+          </div>
+          <div class="resume-card">
+            <span class="resume-name">Rohit_Sharma_Resume.pdf</span>
+            <span class="resume-meta">PDF • 650 KB</span>
+            <button class="resume-download" aria-label="Download resume">⇩</button>
+          </div>
+
+          <div class="panel-nav-item">Experience <span>›</span></div>
+          <div class="panel-nav-item">Education <span>›</span></div>
+          <div class="panel-nav-item">Skills <span>›</span></div>
+          <div class="panel-nav-item">Settings <span>›</span></div>
+
           <button id="saveProfile" class="btn btn-primary">Save Profile</button>
         </div>
       </aside>

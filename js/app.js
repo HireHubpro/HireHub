@@ -168,6 +168,7 @@ function renderHome(user) {
   $('headlineInput').value = user.profile.headline;
   $('locationInput').value = user.profile.location;
   $('aboutInput').value = user.profile.about;
+  $('aboutPreview').textContent = user.profile.about || 'Tell people about yourself';
 
   renderList('experiencePills', user.profile.experience || []);
   renderList('educationPills', user.profile.education || []);
@@ -200,6 +201,11 @@ function renderHome(user) {
 
   $('addPostBtn')?.addEventListener('click', submitPost);
   $('postTextBtn')?.addEventListener('click', submitPost);
+  $('postInput')?.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      submitPost();
+    }
+  });
 
   $('saveProfile')?.addEventListener('click', () => {
     const updated = updateProfile({
@@ -208,6 +214,18 @@ function renderHome(user) {
       about: $('aboutInput').value.trim()
     });
     renderHome(updated);
+  });
+
+  document.querySelectorAll('.edit-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const section = btn.getAttribute('data-section');
+      if (section !== 'about') return;
+      $('aboutInput')?.classList.toggle('show');
+      $('headlineInput')?.classList.toggle('show');
+      $('locationInput')?.classList.toggle('show');
+      document.querySelector('.edit-field-row')?.classList.toggle('show');
+      $('aboutInput')?.focus();
+    });
   });
 
   [
