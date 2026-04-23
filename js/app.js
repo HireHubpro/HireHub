@@ -4,6 +4,10 @@ $('goSignup')?.addEventListener('click', () => (location.href = 'choose-role.htm
 $('goLogin')?.addEventListener('click', () => (location.href = 'login.html'));
 
 document.querySelectorAll('.role-card').forEach((card) => {
+$('goSignup')?.addEventListener('click', () => location.href = 'choose-role.html');
+$('goLogin')?.addEventListener('click', () => location.href = 'login.html');
+
+document.querySelectorAll('.role-card').forEach(card => {
   card.addEventListener('click', () => {
     sessionStorage.setItem('hh_role', card.dataset.role);
     location.href = 'signup.html';
@@ -98,6 +102,11 @@ function renderPosts(user) {
 }
 
 function hydrateHome(user) {
+(function initHome() {
+  if (!location.pathname.endsWith('home.html')) return;
+  const user = currentUser();
+  if (!user) { location.href = 'login.html'; return; }
+
   $('welcomeName').textContent = user.fullName;
   $('roleText').textContent = user.role;
   $('panelName').textContent = user.fullName;
@@ -168,3 +177,22 @@ function togglePanel(open) {
 $('profileBtn')?.addEventListener('click', () => togglePanel(true));
 $('closePanel')?.addEventListener('click', () => togglePanel(false));
 $('backdrop')?.addEventListener('click', () => togglePanel(false));
+
+$('profileBtn')?.addEventListener('click', () => togglePanel(true));
+$('closePanel')?.addEventListener('click', () => togglePanel(false));
+$('backdrop')?.addEventListener('click', () => togglePanel(false));
+
+$('saveProfile')?.addEventListener('click', () => {
+  try {
+    const user = updateProfile({
+      headline: $('headlineInput').value,
+      location: $('locationInput').value,
+      about: $('aboutInput').value,
+    });
+    $('panelHeadline').textContent = user.profile.headline;
+    $('panelLocation').textContent = user.profile.location;
+    alert('Profile updated');
+  } catch (err) {
+    alert(err.message);
+  }
+});
