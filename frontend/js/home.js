@@ -13,16 +13,15 @@
     .then(async (res) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to load user');
-      document.getElementById('welcomeName').textContent = data.fullName;
-      document.getElementById('roleText').textContent = data.headline || `${data.role}`;
-      document.getElementById('panelName').textContent = data.fullName;
-      document.getElementById('panelRole').textContent = data.role;
-      document.getElementById('panelHeadline').textContent = data.headline || '';
-      document.getElementById('panelLocation').textContent = data.location || '';
-      document.getElementById('aboutPreview').textContent = data.about || 'Tell people about yourself.';
-      document.getElementById('aboutInput').value = data.about || '';
-      document.getElementById('headlineInput').value = data.headline || '';
-      document.getElementById('locationInput').value = data.location || '';
+      const normalized = {
+        ...data,
+        experience: Array.isArray(data.experience) ? data.experience : [],
+        education: Array.isArray(data.education) ? data.education : [],
+        skills: Array.isArray(data.skills) ? data.skills : [],
+        posts: Array.isArray(data.posts) ? data.posts : [],
+      };
+      window.hireHubState = { user: normalized };
+      window.dispatchEvent(new CustomEvent('hirehub:user-loaded', { detail: normalized }));
     })
     .catch(() => {
       localStorage.removeItem('token');
