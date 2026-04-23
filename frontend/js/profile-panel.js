@@ -9,16 +9,54 @@ const postInput = document.getElementById('postTextInput');
 const feed = document.getElementById('feed');
 const listIds = { experience: 'experienceList', education: 'educationList', skills: 'skillsList' };
 
+function showProfileGuardNotice(message) {
+  const noticeId = 'profilePanelGuardNotice';
+  if (document.getElementById(noticeId)) return;
+
+  const notice = document.createElement('div');
+  notice.id = noticeId;
+  notice.textContent = message;
+  notice.className = 'profile-guard-notice';
+  notice.setAttribute('role', 'alert');
+  document.body.appendChild(notice);
+}
+
+const requiredNodes = { profileBtn, profilePanel, backdrop };
+const missingRequiredNodes = Object.entries(requiredNodes)
+  .filter(([, node]) => !node)
+  .map(([name]) => name);
+
+if (missingRequiredNodes.length) {
+  const message = `Profile panel unavailable. Missing DOM node(s): ${missingRequiredNodes.join(', ')}.`;
+  console.error(`[profile-panel] ${message}`);
+  showProfileGuardNotice(message);
+}
+
 function setOpen(open) {
   if (!profilePanel || !backdrop) return;
   profilePanel.classList.toggle('open', open);
   backdrop.classList.toggle('show', open);
   profilePanel.setAttribute('aria-hidden', String(!open));
+  document.body.classList.toggle('profile-panel-open', open);
 }
 
-profileBtn?.addEventListener('click', () => setOpen(true));
+function isPanelOpen() {
+  return Boolean(profilePanel?.classList.contains('open'));
+}
+
+profileBtn?.addEventListener('click', (event) => {
+  event.preventDefault();
+  setOpen(!isPanelOpen());
+});
+
 closePanel?.addEventListener('click', () => setOpen(false));
 backdrop?.addEventListener('click', () => setOpen(false));
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && isPanelOpen()) {
+    setOpen(false);
+  }
+});
 
 function toggleEdit(section) {
   const field = document.getElementById(`${section}Input`);

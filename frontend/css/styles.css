@@ -74,6 +74,31 @@ body {
 .terms { color: var(--muted); text-align: center; font-size: 16px; line-height: 1.5; }
 .terms a { color: var(--primary); text-decoration: none; }
 .error { color: #dc2626; min-height: 20px; }
+.auth-feedback {
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-size: 14px;
+  font-weight: 600;
+}
+.profile-guard-notice {
+  position: fixed;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 60;
+  max-width: min(92vw, 420px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
 .home-layout { background: #f7f8fc; padding-bottom: 86px; }
 .soft { background: #fff; }
 .home-header { display: grid; gap: 12px; }
@@ -111,9 +136,13 @@ body {
   background: #fff;
   transform: translateX(100%);
   transition: transform 0.25s ease;
-  z-index: 20;
+  z-index: 40;
+  pointer-events: none;
 }
-.profile-panel.open { transform: translateX(0); }
+.profile-panel.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
 .panel-cover { height: 140px; background: linear-gradient(150deg, #5f4b8b, #9c6ba7); position: relative; }
 .close { position: absolute; right: 10px; top: 10px; border: 0; background: transparent; color: #fff; font-size: 24px; }
 .panel-body { padding: 14px; display: grid; gap: 10px; margin-top: -34px; }
@@ -226,8 +255,10 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s;
+  z-index: 30;
 }
 .backdrop.show { opacity: 1; pointer-events: auto; }
+body.profile-panel-open { overflow: hidden; }
 @media (max-width: 420px) {
   .brand { font-size: 30px; }
   .hero { font-size: 42px; }
