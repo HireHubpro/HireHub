@@ -3,17 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Log In</title>
+    <title>HireHub | Log In</title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <main class="phone">
-      <h2>Log in to HireHub</h2>
+    <main class="phone screen">
+      <div class="top-time">9:41</div>
+      <a href="/index.html" class="back-btn" aria-label="Go back">←</a>
+      <h2 class="screen-title">Log in to HireHub</h2>
+      <p class="tag">Welcome back</p>
+
       <form id="loginForm" class="form">
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Password" required />
+        <label>Email <input type="email" name="email" placeholder="Enter your email" required /></label>
+        <label>Password <input type="password" name="password" placeholder="Enter your password" required /></label>
         <button class="btn btn-primary" type="submit">Log In</button>
       </form>
+
+      <a href="/signup.html" class="link login-link">Don’t have an account? <strong>Sign up</strong></a>
       <p id="authError" class="error"></p>
     </main>
     <script src="/js/auth.js"></script>
