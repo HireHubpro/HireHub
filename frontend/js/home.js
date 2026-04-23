@@ -19,6 +19,7 @@
       document.getElementById('panelRole').textContent = data.role;
       document.getElementById('panelHeadline').textContent = data.headline || '';
       document.getElementById('panelLocation').textContent = data.location || '';
+      document.getElementById('aboutPreview').textContent = data.about || 'Tell people about yourself.';
       document.getElementById('aboutInput').value = data.about || '';
       document.getElementById('headlineInput').value = data.headline || '';
       document.getElementById('locationInput').value = data.location || '';
