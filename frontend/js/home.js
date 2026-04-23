@@ -3,11 +3,11 @@
 
   const token = localStorage.getItem('token');
   if (!token) {
-    window.location.href = 'login.html';
+    window.location.href = '/login.html';
     return;
   }
 
-  fetch(`${window.HIREHUB_API_BASE || ''}/api/user/me`, {
+  fetch('/api/user/me', {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then(async (res) => {
@@ -24,6 +24,6 @@
     })
     .catch(() => {
       localStorage.removeItem('token');
-      window.location.href = 'login.html';
+      window.location.href = '/login.html';
     });
 })();

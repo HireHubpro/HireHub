@@ -22,7 +22,7 @@ saveProfile?.addEventListener('click', async () => {
     location: document.getElementById('locationInput').value,
   };
 
-  const res = await fetch(`${window.HIREHUB_API_BASE || ''}/api/user/profile`, {
+  const res = await fetch('/api/user/profile', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
