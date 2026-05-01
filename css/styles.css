@@ -1,11 +1,11 @@
 :root {
-  --bg: #f3f4f8;
+  --bg: #eef2ff;
   --surface: #ffffff;
   --text: #0f172a;
   --muted: #667085;
   --line: #e4e7ec;
-  --primary: #155eef;
-  --primary-700: #004eea;
+  --primary: #2563eb;
+  --primary-700: #1d4ed8;
   --success: #16a34a;
   --warning: #f59e0b;
 }
@@ -24,6 +24,8 @@ body {
 .mobile-screen {
   width: min(390px, 100vw);
   min-height: 100vh;
+  border-radius: 22px;
+  box-shadow: 0 20px 55px rgba(2, 6, 23, 0.14);
   margin: 0 auto;
   background: var(--surface);
   position: relative;
@@ -31,7 +33,7 @@ body {
 }
 
 .screen-content {
-  padding: 18px 16px 18px;
+  padding: 28px 22px 22px;
 }
 
 .status-bar {
@@ -130,8 +132,8 @@ body {
   width: 100%;
   border: 1px solid transparent;
   border-radius: 12px;
-  height: 64px;
-  font-size: 26px;
+  height: 52px;
+  font-size: 17px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -171,8 +173,8 @@ body {
 }
 
 h1 {
-  margin: 10px 0 6px;
-  font-size: 44px;
+  margin: 12px 0 6px;
+  font-size: 34px;
   line-height: 1.2;
   letter-spacing: -0.03em;
 }
@@ -180,7 +182,7 @@ h1 {
 .subtitle {
   margin: 0 0 20px;
   color: var(--muted);
-  font-size: 28px;
+  font-size: 16px;
 }
 
 .stack {
@@ -257,7 +259,7 @@ input,
 textarea {
   width: 100%;
   border: 1px solid #d0d5dd;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 16px;
   padding: 14px;
   color: #111827;
@@ -384,7 +386,7 @@ textarea:focus {
 
 .post-image {
   width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   height: 140px;
   background: linear-gradient(135deg, #f4f6fb 0%, #dbe4ff 60%, #eff3ff 100%);
   margin-top: 8px;
@@ -544,7 +546,7 @@ textarea:focus {
 .about-preview {
   margin: 0 0 8px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px;
   color: #475467;
   line-height: 1.4;
