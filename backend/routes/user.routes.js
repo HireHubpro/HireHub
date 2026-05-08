@@ -22,7 +22,7 @@ function splitProfileItems(rows) {
 router.get('/me', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT u.id, u.full_name AS fullName, u.email, u.role, p.headline, p.location, p.about
+      `SELECT u.id, u.full_name AS fullName, u.email, u.role, p.headline, p.location, p.about, p.resume_url AS resumeUrl, p.avatar_url AS avatarUrl, p.cover_url AS coverUrl
        FROM users u
        LEFT JOIN profiles p ON p.user_id = u.id
        WHERE u.id = ?`,
@@ -61,15 +61,15 @@ router.get('/me', async (req, res) => {
 });
 
 router.put('/profile', async (req, res) => {
-  const { headline, location, about, experience, education, skills } = req.body;
+  const { headline, location, about, resumeUrl, avatarUrl, coverUrl, experience, education, skills } = req.body;
   const profileItems = { experience, education, skills };
   const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
     await connection.query(
-      'UPDATE profiles SET headline = ?, location = ?, about = ? WHERE user_id = ?',
-      [headline || '', location || '', about || '', req.user.userId]
+      'UPDATE profiles SET headline = ?, location = ?, about = ?, resume_url = ?, avatar_url = ?, cover_url = ? WHERE user_id = ?',
+      [headline || '', location || '', about || '', resumeUrl || null, avatarUrl || null, coverUrl || null, req.user.userId]
     );
 
     for (const [type, values] of Object.entries(profileItems)) {
@@ -131,6 +131,24 @@ router.put('/posts/:id', async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
     return res.json({ message: 'Post updated' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+
+router.delete('/posts/:id', async (req, res) => {
+  const postId = Number(req.params.id);
+  if (!postId) {
+    return res.status(400).json({ message: 'Valid post id is required' });
+  }
+
+  try {
+    const [result] = await pool.query('DELETE FROM posts WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    return res.json({ message: 'Post deleted' });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
