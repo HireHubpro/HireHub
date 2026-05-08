@@ -41,6 +41,9 @@
         education: Array.isArray(data.education) ? data.education : [],
         skills: Array.isArray(data.skills) ? data.skills : [],
         posts: Array.isArray(data.posts) ? data.posts : [],
+        resumeUrl: data.resumeUrl || '',
+        avatarUrl: data.avatarUrl || '',
+        coverUrl: data.coverUrl || '',
       };
       window.hireHubState = { user: normalized };
       window.dispatchEvent(new CustomEvent('hirehub:user-loaded', { detail: normalized }));

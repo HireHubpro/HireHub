@@ -46,13 +46,13 @@
 
       <aside id="profilePanel" class="profile-panel" aria-hidden="true">
         <div class="panel-cover">
-          <button class="panel-camera" aria-label="Update cover photo">📷</button>
+          <button id="coverUploadBtn" class="panel-camera" aria-label="Update cover photo">📷</button><input id="coverUploadInput" type="file" accept="image/*" hidden />
           <button id="closePanel" class="close">✕</button>
         </div>
         <div class="panel-body">
           <div class="panel-profile-top">
-            <div class="avatar profile"></div>
-            <button class="avatar-camera" aria-label="Update profile photo">📷</button>
+            <div id="profileAvatar" class="avatar profile"></div><input id="avatarUploadInput" type="file" accept="image/*" hidden />
+            <button id="avatarUploadBtn" class="avatar-camera" aria-label="Update profile photo">📷</button>
           </div>
 
           <p class="panel-name-row">
@@ -86,9 +86,13 @@
             <button class="edit-link">Edit</button>
           </div>
           <div class="resume-card">
-            <span class="resume-name">Rohit_Sharma_Resume.pdf</span>
-            <span class="resume-meta">PDF • 650 KB</span>
-            <button class="resume-download" aria-label="Download resume">⇩</button>
+            <span id="resumeName" class="resume-name">No resume uploaded</span>
+            <span id="resumeMeta" class="resume-meta">Upload PDF</span>
+            <a id="resumeDownload" class="resume-download" aria-label="Download resume" target="_blank" rel="noopener">⇩</a>
+          </div>
+          <div class="panel-item-row">
+            <input id="resumeUrlInput" placeholder="Resume URL (optional)" />
+            <input id="resumeUploadInput" type="file" accept="application/pdf" />
           </div>
 
           <div class="panel-section-head">
@@ -104,7 +108,8 @@
             <label>Education</label>
           </div>
           <div class="panel-item-row">
-            <input id="educationInput" placeholder="Add education" />
+            <input id="educationInput" list="educationSuggestions" placeholder="Add education" />
+            <datalist id="educationSuggestions"></datalist>
             <button id="addEducationBtn" class="btn-secondary small-btn" type="button">Add</button>
           </div>
           <div id="educationList" class="panel-list-empty">No education added yet.</div>
@@ -113,7 +118,8 @@
             <label>Skills</label>
           </div>
           <div class="panel-item-row">
-            <input id="skillsInput" placeholder="Add skill" />
+            <input id="skillsInput" list="skillsSuggestions" placeholder="Add skill" />
+            <datalist id="skillsSuggestions"></datalist>
             <button id="addSkillsBtn" class="btn-secondary small-btn" type="button">Add</button>
           </div>
           <div id="skillsList" class="panel-list-empty">No skills added yet.</div>

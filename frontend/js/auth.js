@@ -9,11 +9,26 @@ function byId(id) {
   return document.getElementById(id);
 }
 
-async function postAuth(action, payload) {
-  const endpoints = AUTH_ENDPOINTS[action] || [];
-  let lastError = new Error(`${action} failed`);
+function buildApiUrl(endpoint) {
+  return `${API_BASE}/${endpoint.replace(/^\/+/, '')}`;
+}
 
-  for (const endpoint of endpoints) {
+async function postAuth(action, payload) {
+  const endpoint = AUTH_ENDPOINTS[action];
+  if (!endpoint) {
+    throw new Error(`Unsupported auth action: ${action}`);
+  }
+
+  const res = await fetch(buildApiUrl(endpoint), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const raw = await res.text();
+  let data = null;
+
+  if (raw) {
     try {
       const res = await fetch(`${API_BASE}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`, {
         method: 'POST',
@@ -44,7 +59,11 @@ async function postAuth(action, payload) {
     }
   }
 
-  throw lastError;
+  if (!res.ok) {
+    throw new Error(data?.message || `${action} failed`);
+  }
+
+  return data;
 }
 
 byId('goSignup')?.addEventListener('click', () => {
