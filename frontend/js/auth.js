@@ -1,7 +1,50 @@
-const API_BASE = window.location.origin;
+const API_BASE = window.HIREHUB_API_BASE || window.location.origin;
+
+const AUTH_ENDPOINTS = {
+  register: ['/api/auth/register', '/api/register.php'],
+  login: ['/api/auth/login', '/api/login.php'],
+};
 
 function byId(id) {
   return document.getElementById(id);
+}
+
+async function postAuth(action, payload) {
+  const endpoints = AUTH_ENDPOINTS[action] || [];
+  let lastError = new Error(`${action} failed`);
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const raw = await res.text();
+      let data = null;
+
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch {
+        const isHtml = raw.trim().startsWith('<!DOCTYPE') || raw.trim().startsWith('<html');
+        if (isHtml) {
+          throw new Error(`Endpoint ${endpoint} returned HTML instead of JSON`);
+        }
+        throw new Error(`Endpoint ${endpoint} returned invalid JSON`);
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.message || `${action} failed`);
+      }
+
+      return data;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  throw lastError;
 }
 
 byId('goSignup')?.addEventListener('click', () => {
@@ -45,14 +88,8 @@ byId('signupForm')?.addEventListener('submit', async (e) => {
   errorEl.textContent = '';
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Signup failed');
-    localStorage.setItem('token', data.token);
+    const data = await postAuth('register', payload);
+    localStorage.setItem('hirehub_user', JSON.stringify(data.user));
     sessionStorage.removeItem('selected_role');
     window.location.href = '/home.html';
   } catch (err) {
@@ -72,14 +109,8 @@ byId('loginForm')?.addEventListener('submit', async (e) => {
   errorEl.textContent = '';
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Login failed');
-    localStorage.setItem('token', data.token);
+    const data = await postAuth('login', payload);
+    localStorage.setItem('hirehub_user', JSON.stringify(data.user));
     window.location.href = '/home.html';
   } catch (err) {
     errorEl.textContent = err.message;

@@ -48,6 +48,12 @@ router.post('/register', async (req, res) => {
       'Add your about summary',
     ]);
 
+    await pool.query('INSERT INTO login_credentials (username, password, roll) VALUES (?, ?, ?)', [
+      email,
+      passwordHash,
+      role,
+    ]);
+
     const token = jwt.sign({ userId: result.insertId, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
     return res.status(201).json({
       token,

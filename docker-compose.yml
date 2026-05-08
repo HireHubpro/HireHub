@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
-      MYSQL_DATABASE: ${DB_NAME:-hirehub}
+      MYSQL_DATABASE: ${DB_NAME:-HireHub}
     ports:
       - "3306:3306"
     volumes:
@@ -16,6 +16,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: hirehub-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_PASSWORD:-password}
+    ports:
+      - "8080:80"
 
   app:
     build: .
@@ -30,7 +46,7 @@ services:
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD:-password}
-      DB_NAME: ${DB_NAME:-hirehub}
+      DB_NAME: ${DB_NAME:-HireHub}
       JWT_SECRET: ${JWT_SECRET:-change_me}
     ports:
       - "3000:3000"
