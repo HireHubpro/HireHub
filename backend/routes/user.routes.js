@@ -137,6 +137,44 @@ router.put('/posts/:id', async (req, res) => {
 });
 
 
+
+router.put('/posts/:id/like', async (req, res) => {
+  const postId = Number(req.params.id);
+  if (!postId) {
+    return res.status(400).json({ message: 'Valid post id is required' });
+  }
+
+  try {
+    const [result] = await pool.query('UPDATE posts SET likes = likes + 1 WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    const [[post]] = await pool.query('SELECT likes FROM posts WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
+    return res.json({ message: 'Post liked', likes: post.likes });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.put('/posts/:id/comment', async (req, res) => {
+  const postId = Number(req.params.id);
+  const text = String(req.body.text || '').trim();
+  if (!postId || !text) {
+    return res.status(400).json({ message: 'Valid post id and comment are required' });
+  }
+
+  try {
+    const [result] = await pool.query('UPDATE posts SET comments = comments + 1 WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    const [[post]] = await pool.query('SELECT comments FROM posts WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
+    return res.json({ message: 'Comment added', comments: post.comments });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 router.delete('/posts/:id', async (req, res) => {
   const postId = Number(req.params.id);
   if (!postId) {
