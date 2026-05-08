@@ -1,4 +1,9 @@
-const API_BASE = window.HIREHUB_API_BASE || window.location.origin;
+const API_BASE = (window.HIREHUB_API_BASE || window.location.origin || '').replace(/\/$/, '');
+
+const AUTH_ENDPOINTS = {
+  register: ['/api/auth/register'],
+  login: ['/api/auth/login'],
+};
 
 function byId(id) {
   return document.getElementById(id);
@@ -10,7 +15,7 @@ async function postAuth(action, payload) {
 
   for (const endpoint of endpoints) {
     try {
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const res = await fetch(`${API_BASE}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -83,13 +88,7 @@ byId('signupForm')?.addEventListener('submit', async (e) => {
   errorEl.textContent = '';
 
   try {
-    const res = await fetch(`${API_BASE}/api/register.php`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Signup failed');
+    const data = await postAuth('register', payload);
     localStorage.setItem('hirehub_user', JSON.stringify(data.user));
     sessionStorage.removeItem('selected_role');
     window.location.href = '/home.html';
@@ -110,13 +109,7 @@ byId('loginForm')?.addEventListener('submit', async (e) => {
   errorEl.textContent = '';
 
   try {
-    const res = await fetch(`${API_BASE}/api/login.php`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Login failed');
+    const data = await postAuth('login', payload);
     localStorage.setItem('hirehub_user', JSON.stringify(data.user));
     window.location.href = '/home.html';
   } catch (err) {
