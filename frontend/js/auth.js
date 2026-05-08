@@ -1,8 +1,8 @@
-const API_BASE = (window.HIREHUB_API_BASE || window.location.origin || '').replace(/\/+$/, '');
+const API_BASE = (window.HIREHUB_API_BASE || window.location.origin || '').replace(/\/$/, '');
 
 const AUTH_ENDPOINTS = {
-  register: '/api/auth/register',
-  login: '/api/auth/login',
+  register: ['/api/auth/register'],
+  login: ['/api/auth/login'],
 };
 
 function byId(id) {
@@ -30,15 +30,32 @@ async function postAuth(action, payload) {
 
   if (raw) {
     try {
-      data = JSON.parse(raw);
-    } catch {
-      const trimmed = raw.trim().toLowerCase();
-      const isHtml = trimmed.startsWith('<!doctype') || trimmed.startsWith('<html');
-      throw new Error(
-        isHtml
-          ? `Auth API returned HTML (check route/proxy): ${buildApiUrl(endpoint)}`
-          : 'Auth API returned invalid JSON'
-      );
+      const res = await fetch(`${API_BASE}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const raw = await res.text();
+      let data = null;
+
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch {
+        const isHtml = raw.trim().startsWith('<!DOCTYPE') || raw.trim().startsWith('<html');
+        if (isHtml) {
+          throw new Error(`Endpoint ${endpoint} returned HTML instead of JSON`);
+        }
+        throw new Error(`Endpoint ${endpoint} returned invalid JSON`);
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.message || `${action} failed`);
+      }
+
+      return data;
+    } catch (err) {
+      lastError = err;
     }
   }
 
