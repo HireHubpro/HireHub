@@ -1,8 +1,8 @@
 const API_BASE = (window.HIREHUB_API_BASE || window.location.origin || '').replace(/\/$/, '');
 
 const AUTH_ENDPOINTS = {
-  register: ['/api/auth/register'],
-  login: ['/api/auth/login'],
+  register: '/api/auth/register',
+  login: '/api/auth/login',
 };
 
 function byId(id) {
@@ -10,7 +10,7 @@ function byId(id) {
 }
 
 function buildApiUrl(endpoint) {
-  return `${API_BASE}/${endpoint.replace(/^\/+/, '')}`;
+  return `${API_BASE}/${String(endpoint).replace(/^\/+/, '')}`;
 }
 
 async function postAuth(action, payload) {
@@ -28,35 +28,15 @@ async function postAuth(action, payload) {
   const raw = await res.text();
   let data = null;
 
-  if (raw) {
-    try {
-      const res = await fetch(`${API_BASE}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const raw = await res.text();
-      let data = null;
-
-      try {
-        data = raw ? JSON.parse(raw) : null;
-      } catch {
-        const isHtml = raw.trim().startsWith('<!DOCTYPE') || raw.trim().startsWith('<html');
-        if (isHtml) {
-          throw new Error(`Endpoint ${endpoint} returned HTML instead of JSON`);
-        }
-        throw new Error(`Endpoint ${endpoint} returned invalid JSON`);
-      }
-
-      if (!res.ok) {
-        throw new Error(data?.message || `${action} failed`);
-      }
-
-      return data;
-    } catch (err) {
-      lastError = err;
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {
+    const trimmed = raw.trim();
+    const isHtml = trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html');
+    if (isHtml) {
+      throw new Error(`Endpoint ${endpoint} returned HTML instead of JSON`);
     }
+    throw new Error(`Endpoint ${endpoint} returned invalid JSON`);
   }
 
   if (!res.ok) {
@@ -109,6 +89,7 @@ byId('signupForm')?.addEventListener('submit', async (e) => {
   try {
     const data = await postAuth('register', payload);
     localStorage.setItem('hirehub_user', JSON.stringify(data.user));
+    localStorage.setItem('token', data.token);
     sessionStorage.removeItem('selected_role');
     window.location.href = '/home.html';
   } catch (err) {
@@ -130,6 +111,7 @@ byId('loginForm')?.addEventListener('submit', async (e) => {
   try {
     const data = await postAuth('login', payload);
     localStorage.setItem('hirehub_user', JSON.stringify(data.user));
+    localStorage.setItem('token', data.token);
     window.location.href = '/home.html';
   } catch (err) {
     errorEl.textContent = err.message;

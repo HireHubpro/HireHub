@@ -66,7 +66,7 @@ saveProfile?.addEventListener('click', async () => {
 function makePostCard(post) {
   const name = window.hireHubState?.user?.fullName || 'You'; const role = window.hireHubState?.user?.headline || '';
   const article = document.createElement('article'); article.className = 'card post';
-  article.innerHTML = `<div class="post-head"><div class="avatar"></div><div><strong>${name}</strong><p>${role}</p></div><span>${post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'now'}</span></div><p class="post-text"></p><div class="post-actions">👍 ❤️ 👏 <span>${post.likes || 0}</span> <span>${post.comments || 0} Comments</span></div>`;
+  article.innerHTML = `<div class="post-head"><div class="avatar"></div><div><strong>${name}</strong><p>${role}</p></div><span>${post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'now'}</span></div><p class="post-text"></p><div class="post-actions"><button class="btn-secondary small-btn" data-like-post="${post.id}" type="button">👍 Like</button><button class="btn-secondary small-btn" data-comment-post="${post.id}" type="button">💬 Comment</button><button class="btn-secondary small-btn" data-delete-post-feed="${post.id}" type="button">🗑 Delete</button><span>${post.likes || 0} Likes</span> <span>${post.comments || 0} Comments</span></div>`;
   article.querySelector('.post-text').textContent = post.content || '';
   return article;
 }
@@ -77,6 +77,9 @@ function renderList(type, values) { const target = document.getElementById(listI
 
 function renderPosts(posts) {
   if (!feed) return; feed.innerHTML = ''; (posts || []).forEach((post) => feed.appendChild(makePostCard(post)));
+  feed.querySelectorAll('[data-like-post]').forEach((button) => button.addEventListener('click', () => likePost(button.getAttribute('data-like-post'))));
+  feed.querySelectorAll('[data-comment-post]').forEach((button) => button.addEventListener('click', () => commentPost(button.getAttribute('data-comment-post'))));
+  feed.querySelectorAll('[data-delete-post-feed]').forEach((button) => button.addEventListener('click', () => deletePost(button.getAttribute('data-delete-post-feed'))));
   const editor = document.getElementById('profilePosts'); if (!editor) return;
   if (!posts?.length) { editor.className = 'panel-list-empty'; editor.textContent = 'No posts to edit.'; return; }
   editor.className = '';
@@ -85,6 +88,10 @@ function renderPosts(posts) {
   editor.querySelectorAll('[data-delete-post]').forEach((button) => button.addEventListener('click', () => deletePost(button.getAttribute('data-delete-post'))));
 }
 async function updatePost(postId) { const token = localStorage.getItem('token'); const content = document.getElementById(`postEdit_${postId}`)?.value.trim(); if (!content) return; const res = await fetch(`/api/user/posts/${postId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ content }) }); if (!res.ok) return alert('Failed to update post'); const u = window.hireHubState.user; u.posts = u.posts.map((p) => (String(p.id) === String(postId) ? { ...p, content } : p)); renderPosts(u.posts); }
+
+async function likePost(postId) { const token = localStorage.getItem('token'); const res = await fetch(`/api/user/posts/${postId}/like`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) return alert('Failed to like post'); const data = await res.json(); const u = window.hireHubState.user; u.posts = u.posts.map((p) => (String(p.id) === String(postId) ? { ...p, likes: data.likes } : p)); renderPosts(u.posts); }
+async function commentPost(postId) { const text = prompt('Write a comment'); if (!text || !text.trim()) return; const token = localStorage.getItem('token'); const res = await fetch(`/api/user/posts/${postId}/comment`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ text }) }); if (!res.ok) return alert('Failed to comment on post'); const data = await res.json(); const u = window.hireHubState.user; u.posts = u.posts.map((p) => (String(p.id) === String(postId) ? { ...p, comments: data.comments } : p)); renderPosts(u.posts); }
+
 async function deletePost(postId) { const token = localStorage.getItem('token'); const res = await fetch(`/api/user/posts/${postId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) return alert('Failed to delete post'); const u = window.hireHubState.user; u.posts = u.posts.filter((p) => String(p.id) !== String(postId)); renderPosts(u.posts); }
 
 function renderUser(user) {
