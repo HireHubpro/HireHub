@@ -18,31 +18,67 @@
         </div>
         <div class="composer">
           <div class="avatar small"></div>
-          <input id="postTextInput" maxlength="400" placeholder="What's on your mind?" />
+          <input id="postTriggerInput" readonly placeholder="What's on your mind?" />
         </div>
         <nav class="quick-actions">
-          <button id="publishTextPostBtn">Post</button><button>Job</button><button>Article</button>
+          <button id="photoPostBtn">📷 Photo</button>
+          <button id="videoPostBtn">🎥 Video</button>
+          <button>💼 Job</button>
         </nav>
       </header>
 
       <section id="feed" class="feed">
-        <article class="card post">
-          <div class="post-head">
-            <div class="avatar"></div>
-            <div>
-              <strong id="welcomeName">Rohit Sharma</strong>
-              <p id="roleText">Product Designer</p>
-            </div>
-            <span>⋯</span>
-          </div>
-          <p>Excited to share my latest UI/UX case study on improving user onboarding experience for a SaaS product. Let me know your thoughts!</p>
-          <div class="post-media"></div>
-          <div class="post-actions">👍 ❤️ 👏 <span>120</span> <span>12 Comments</span></div>
-        </article>
+        <!-- Posts will be injected here -->
       </section>
 
+      <!-- Post Creation Modal -->
+      <div id="postModal" class="modal">
+        <div class="modal-header">
+          <h3>Create a post</h3>
+          <button id="closePostModal" class="close" style="color: var(--text); position: static;">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="composer" style="border: 0;">
+            <div class="avatar small profile-avatar-img"></div>
+            <strong class="user-full-name">User Name</strong>
+          </div>
+          <textarea id="postModalInput" placeholder="What do you want to talk about?" rows="6" style="border: 0; outline: none; background: transparent; resize: none;"></textarea>
+
+          <div id="mediaPreview" class="media-preview-container">
+            <!-- Preview image or video will be injected here -->
+            <button class="remove-media" id="removeMediaBtn">✕</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="modal-actions">
+            <button id="modalPhotoBtn" title="Add a photo">📷</button>
+            <button id="modalVideoBtn" title="Add a video">🎥</button>
+            <input type="file" id="modalMediaInput" hidden accept="image/*,video/*" />
+          </div>
+          <button id="publishPostBtn" class="btn btn-primary small-btn">Post</button>
+        </div>
+      </div>
+
+      <!-- Share Modal -->
+      <div id="shareModal" class="modal">
+        <div class="modal-header">
+          <h3>Share Post</h3>
+          <button id="closeShareModal" class="close" style="color: var(--text); position: static;">✕</button>
+        </div>
+        <div class="modal-body">
+          <button id="copyLinkBtn" class="btn btn-secondary" style="width: 100%; text-align: left; margin-bottom: 12px;">🔗 Copy link to post</button>
+          <p style="font-weight: 600; margin-bottom: 8px;">Share to a user</p>
+          <div id="userListForSharing" class="user-list">
+            <!-- Users will be injected here -->
+          </div>
+        </div>
+      </div>
+
       <nav class="bottom-nav">
-        <button>Home</button><button>Post</button><button>Inbox</button><button id="profileBtn">Profile</button>
+        <button id="navHomeBtn">Home</button>
+        <button id="navPostBtn">Post</button>
+        <button>Inbox</button>
+        <button id="profileBtn">Profile</button>
       </nav>
 
       <aside id="profilePanel" class="profile-panel" aria-hidden="true">

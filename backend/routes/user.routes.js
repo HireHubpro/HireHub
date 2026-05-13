@@ -42,11 +42,12 @@ router.get('/me', async (req, res) => {
         [req.user.userId]
       ),
       pool.query(
-        `SELECT id, content, likes, comments, created_at AS createdAt
-         FROM posts
-         WHERE user_id = ?
-         ORDER BY created_at DESC`,
-        [req.user.userId]
+        `SELECT p.id, p.user_id, p.content, p.media_url, p.media_type, p.likes, p.comments, p.shares, p.created_at AS createdAt, u.full_name as fullName, pr.avatar_url as avatarUrl, pr.headline
+         FROM posts p
+         JOIN users u ON p.user_id = u.id
+         LEFT JOIN profiles pr ON pr.user_id = u.id
+         ORDER BY p.created_at DESC`,
+        []
       ),
     ]);
 
@@ -93,20 +94,27 @@ router.put('/profile', async (req, res) => {
 
 router.post('/posts', async (req, res) => {
   const content = String(req.body.content || '').trim();
-  if (!content) {
-    return res.status(400).json({ message: 'Post content is required' });
+  const mediaUrl = req.body.mediaUrl || null;
+  const mediaType = req.body.mediaType || null;
+
+  if (!content && !mediaUrl) {
+    return res.status(400).json({ message: 'Post content or media is required' });
   }
 
   try {
     const [result] = await pool.query(
-      'INSERT INTO posts (user_id, content, likes, comments) VALUES (?, ?, 0, 0)',
-      [req.user.userId, content]
+      'INSERT INTO posts (user_id, content, media_url, media_type, likes, comments, shares) VALUES (?, ?, ?, ?, 0, 0, 0)',
+      [req.user.userId, content, mediaUrl, mediaType]
     );
     return res.status(201).json({
       id: result.insertId,
+      user_id: req.user.userId,
       content,
+      media_url: mediaUrl,
+      media_type: mediaType,
       likes: 0,
       comments: 0,
+      shares: 0,
       createdAt: new Date().toISOString(),
     });
   } catch (err) {
@@ -136,42 +144,129 @@ router.put('/posts/:id', async (req, res) => {
   }
 });
 
-
-
 router.put('/posts/:id/like', async (req, res) => {
   const postId = Number(req.params.id);
   if (!postId) {
     return res.status(400).json({ message: 'Valid post id is required' });
   }
 
+  const connection = await pool.getConnection();
   try {
-    const [result] = await pool.query('UPDATE posts SET likes = likes + 1 WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
-    if (!result.affectedRows) {
-      return res.status(404).json({ message: 'Post not found' });
+    await connection.beginTransaction();
+
+    const [existing] = await connection.query('SELECT id FROM post_likes WHERE post_id = ? AND user_id = ?', [postId, req.user.userId]);
+
+    if (existing.length > 0) {
+      await connection.query('DELETE FROM post_likes WHERE post_id = ? AND user_id = ?', [postId, req.user.userId]);
+      await connection.query('UPDATE posts SET likes = GREATEST(0, likes - 1) WHERE id = ?', [postId]);
+    } else {
+      await connection.query('INSERT INTO post_likes (post_id, user_id) VALUES (?, ?)', [postId, req.user.userId]);
+      await connection.query('UPDATE posts SET likes = likes + 1 WHERE id = ?', [postId]);
+
+      const [[postOwner]] = await connection.query('SELECT user_id FROM posts WHERE id = ?', [postId]);
+      if (postOwner && postOwner.user_id !== req.user.userId) {
+        await connection.query('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)', [
+          postOwner.user_id,
+          'post_like',
+          `Your post #${postId} received a new like.`
+        ]);
+      }
     }
-    const [[post]] = await pool.query('SELECT likes FROM posts WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
-    await pool.query('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)', [req.user.userId, 'post_like', `Your post #${postId} received a new like.`]);
-    return res.json({ message: 'Post liked', likes: post.likes });
+
+    await connection.commit();
+    const [[post]] = await pool.query('SELECT likes FROM posts WHERE id = ?', [postId]);
+    return res.json({ message: 'Like toggled', likes: post.likes, liked: existing.length === 0 });
+  } catch (err) {
+    await connection.rollback();
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  } finally {
+    connection.release();
+  }
+});
+
+router.post('/posts/:id/comment', async (req, res) => {
+  const postId = Number(req.params.id);
+  const { content, parentId } = req.body;
+  if (!postId || !content) {
+    return res.status(400).json({ message: 'Post id and comment content are required' });
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [result] = await connection.query(
+      'INSERT INTO post_comments (post_id, user_id, parent_id, content) VALUES (?, ?, ?, ?)',
+      [postId, req.user.userId, parentId || null, content]
+    );
+
+    await connection.query('UPDATE posts SET comments = comments + 1 WHERE id = ?', [postId]);
+
+    const [[postOwner]] = await connection.query('SELECT user_id FROM posts WHERE id = ?', [postId]);
+    if (postOwner && postOwner.user_id !== req.user.userId) {
+      await connection.query('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)', [
+        postOwner.user_id,
+        'post_comment',
+        `Your post #${postId} received a new comment.`
+      ]);
+    }
+
+    await connection.commit();
+    return res.status(201).json({ id: result.insertId, content, parentId, createdAt: new Date() });
+  } catch (err) {
+    await connection.rollback();
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  } finally {
+    connection.release();
+  }
+});
+
+router.get('/posts/:id/comments', async (req, res) => {
+  const postId = Number(req.params.id);
+  try {
+    const [comments] = await pool.query(
+      `SELECT c.*, u.full_name as fullName, p.avatar_url as avatarUrl
+       FROM post_comments c
+       JOIN users u ON c.user_id = u.id
+       LEFT JOIN profiles p ON p.user_id = u.id
+       WHERE c.post_id = ? ORDER BY c.created_at ASC`,
+      [postId]
+    );
+    return res.json(comments);
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
-router.put('/posts/:id/comment', async (req, res) => {
+router.post('/posts/:id/share', async (req, res) => {
   const postId = Number(req.params.id);
-  const text = String(req.body.text || '').trim();
-  if (!postId || !text) {
-    return res.status(400).json({ message: 'Valid post id and comment are required' });
-  }
+  const { shareType, sharedWithUserId } = req.body;
 
   try {
-    const [result] = await pool.query('UPDATE posts SET comments = comments + 1 WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
-    if (!result.affectedRows) {
-      return res.status(404).json({ message: 'Post not found' });
+    await pool.query(
+      'INSERT INTO post_shares (post_id, user_id, share_type, shared_with_user_id) VALUES (?, ?, ?, ?)',
+      [postId, req.user.userId, shareType, sharedWithUserId || null]
+    );
+    await pool.query('UPDATE posts SET shares = shares + 1 WHERE id = ?', [postId]);
+
+    if (shareType === 'internal' && sharedWithUserId) {
+      await pool.query('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)', [
+        sharedWithUserId,
+        'post_share',
+        `A post was shared with you.`
+      ]);
     }
-    const [[post]] = await pool.query('SELECT comments FROM posts WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
-    await pool.query('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)', [req.user.userId, 'post_comment', `Your post #${postId} received a new comment.`]);
-    return res.json({ message: 'Comment added', comments: post.comments });
+
+    return res.json({ message: 'Post shared' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.get('/users', async (req, res) => {
+  try {
+    const [users] = await pool.query('SELECT id, full_name as fullName, email FROM users WHERE id != ?', [req.user.userId]);
+    return res.json(users);
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -208,9 +303,36 @@ router.delete('/posts/:id', async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM posts WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
     if (!result.affectedRows) {
-      return res.status(404).json({ message: 'Post not found' });
+      return res.status(404).json({ message: 'Post not found or unauthorized' });
     }
     return res.json({ message: 'Post deleted' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.delete('/comments/:id', async (req, res) => {
+  const commentId = Number(req.params.id);
+  try {
+    const [[comment]] = await pool.query('SELECT post_id FROM post_comments WHERE id = ? AND user_id = ?', [commentId, req.user.userId]);
+    if (!comment) return res.status(404).json({ message: 'Comment not found or unauthorized' });
+
+    await pool.query('DELETE FROM post_comments WHERE id = ?', [commentId]);
+    await pool.query('UPDATE posts SET comments = GREATEST(0, comments - 1) WHERE id = ?', [comment.post_id]);
+
+    return res.json({ message: 'Comment deleted' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.put('/comments/:id', async (req, res) => {
+  const commentId = Number(req.params.id);
+  const { content } = req.body;
+  try {
+    const [result] = await pool.query('UPDATE post_comments SET content = ? WHERE id = ? AND user_id = ?', [content, commentId, req.user.userId]);
+    if (!result.affectedRows) return res.status(404).json({ message: 'Comment not found or unauthorized' });
+    return res.json({ message: 'Comment updated' });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
