@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api/user', userRoutes); app.use('/api', userRoutes);
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 app.get('/health', (_, res) => res.json({ ok: true }));
