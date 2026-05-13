@@ -1,6 +1,8 @@
 (function initHome() {
   if (!window.location.pathname.endsWith('/home.html')) return;
 
+  const THEME_KEY = 'hirehub-theme';
+  const POLL_MS = 45000;
   const feedbackId = 'homeAuthFeedback';
 
   function showAccessMessage(message) {
@@ -16,12 +18,45 @@
     feedback.textContent = message;
   }
 
+  function applyTheme(theme) {
+    const next = theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem(THEME_KEY, next);
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+  }
+
+  async function refreshNotifications(markRead = false) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    if (markRead) {
+      await fetch('/api/user/notifications/read', { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+    }
+    const res = await fetch('/api/user/notifications', { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return;
+    const data = await res.json();
+    const unread = Number(data.unread || 0);
+    const badge = document.getElementById('unreadBadge');
+    if (!badge) return;
+    badge.hidden = unread < 1;
+    badge.textContent = unread > 99 ? '99+' : String(unread);
+  }
+
   function redirectToLogin(message) {
     showAccessMessage(message);
     setTimeout(() => {
       window.location.href = '/login.html';
     }, 1800);
   }
+
+  applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+  document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+  document.getElementById('notificationsBtn')?.addEventListener('click', async () => refreshNotifications(true));
+  window.hireHubRefreshNotifications = () => refreshNotifications(false);
+  setInterval(() => refreshNotifications(false), POLL_MS);
 
   const token = localStorage.getItem('token');
   if (!token) {
@@ -47,6 +82,7 @@
       };
       window.hireHubState = { user: normalized };
       window.dispatchEvent(new CustomEvent('hirehub:user-loaded', { detail: normalized }));
+      refreshNotifications(false);
     })
     .catch((error) => {
       const reason = error?.message || 'Unable to verify your session.';

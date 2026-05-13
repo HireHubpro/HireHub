@@ -150,6 +150,7 @@ router.put('/posts/:id/like', async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
     const [[post]] = await pool.query('SELECT likes FROM posts WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
+    await pool.query('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)', [req.user.userId, 'post_like', `Your post #${postId} received a new like.`]);
     return res.json({ message: 'Post liked', likes: post.likes });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
@@ -169,7 +170,30 @@ router.put('/posts/:id/comment', async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
     const [[post]] = await pool.query('SELECT comments FROM posts WHERE id = ? AND user_id = ?', [postId, req.user.userId]);
+    await pool.query('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)', [req.user.userId, 'post_comment', `Your post #${postId} received a new comment.`]);
     return res.json({ message: 'Comment added', comments: post.comments });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.get('/notifications', async (req, res) => {
+  try {
+    const [[{ unread }]] = await pool.query('SELECT COUNT(*) AS unread FROM notifications WHERE user_id = ? AND is_read = 0', [req.user.userId]);
+    const [items] = await pool.query(
+      'SELECT id, type, message, is_read AS isRead, created_at AS createdAt FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 20',
+      [req.user.userId]
+    );
+    return res.json({ unread, items });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.put('/notifications/read', async (req, res) => {
+  try {
+    await pool.query('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', [req.user.userId]);
+    return res.json({ message: 'Notifications marked as read' });
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message });
   }
