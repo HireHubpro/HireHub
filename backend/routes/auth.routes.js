@@ -48,7 +48,7 @@ router.post('/register', async (req, res) => {
       'Add your about summary',
     ]);
 
-    await pool.query('INSERT INTO login_credentials (username, password, roll) VALUES (?, ?, ?)', [
+    await pool.query('INSERT INTO login_credentials (username, password, role) VALUES (?, ?, ?)', [
       email,
       passwordHash,
       role,
