@@ -5,6 +5,10 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
+
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 
