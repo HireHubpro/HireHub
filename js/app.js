@@ -174,6 +174,64 @@ function renderHome(user) {
   renderList('educationPills', user.profile.education || []);
   renderList('skillsPills', user.profile.skills || []);
   renderPosts(user);
+  renderHirerTools(user);
+}
+
+function renderHirerTools(user) {
+  const hirerTools = $('hirerTools');
+  const activePostings = $('activePostings');
+  const applicantGrid = $('applicantGrid');
+  if (!hirerTools || !activePostings || !applicantGrid) return;
+
+  if (user.role !== 'hirer') {
+    hirerTools.classList.remove('show');
+    return;
+  }
+  hirerTools.classList.add('show');
+
+  const jobs = getActivePostingsForCurrentHirer();
+  activePostings.innerHTML = jobs.length
+    ? jobs
+        .map(
+          (job) => `<div class="job-row"><strong>${job.title}</strong><div class="tiny">${job.company} • ${job.location}</div></div>`
+        )
+        .join('')
+    : '<div class="tiny">No active postings yet.</div>';
+
+  const applications = getApplicantRowsForCurrentHirer();
+  if (!applications.length) {
+    applicantGrid.innerHTML = '<div class="tiny">No applicants yet for your posted jobs.</div>';
+    return;
+  }
+
+  applicantGrid.innerHTML = `
+    <div class="app-grid-head">
+      <span>Name</span><span>Email</span><span>Skills</span><span>Status</span>
+    </div>
+    ${applications
+      .map(
+        (row) => `
+      <div class="app-grid-row">
+        <span>${row.applicantName}</span>
+        <span>${row.applicantEmail}</span>
+        <span>${row.applicantSkills}</span>
+        <select data-app-status="${row.applicationId}">
+          <option ${row.status === 'Applied' ? 'selected' : ''}>Applied</option>
+          <option ${row.status === 'Shortlisted' ? 'selected' : ''}>Shortlisted</option>
+          <option ${row.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+        </select>
+      </div>
+    `
+      )
+      .join('')}
+  `;
+
+  applicantGrid.querySelectorAll('[data-app-status]').forEach((select) => {
+    select.addEventListener('change', () => {
+      updateApplicationStatus(Number(select.getAttribute('data-app-status')), select.value);
+      renderHome(currentUser());
+    });
+  });
 }
 
 (function initHomePage() {
@@ -214,6 +272,21 @@ function renderHome(user) {
       about: $('aboutInput').value.trim()
     });
     renderHome(updated);
+  });
+
+  $('jobPostForm')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const user = currentUser();
+    if (!user || user.role !== 'hirer') return;
+    const form = new FormData(event.currentTarget);
+    createJob({
+      title: String(form.get('title') || '').trim(),
+      company: String(form.get('company') || '').trim(),
+      description: String(form.get('description') || '').trim(),
+      location: String(form.get('location') || '').trim()
+    });
+    event.currentTarget.reset();
+    renderHome(currentUser());
   });
 
   document.querySelectorAll('.edit-toggle').forEach((btn) => {

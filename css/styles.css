@@ -594,4 +594,40 @@ textarea:focus {
   font-size: 12px;
   color: var(--muted);
 }
+.hirer-only {
+  display: none;
+  margin-bottom: 18px;
+}
+
+.hirer-only.show {
+  display: block;
+}
+
+.job-row {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.app-grid-head,
+.app-grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 130px;
+  gap: 8px;
+  align-items: center;
+}
+
+.app-grid-head {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+}
+
+.app-grid-row {
+  font-size: 13px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
 @media (min-width: 768px) { .mobile-screen, .phone, .bottom-nav { width: 100% !important; max-width: none !important; } }
