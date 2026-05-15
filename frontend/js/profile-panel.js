@@ -81,6 +81,26 @@ function ensurePayloadSize(dataUrl, label) {
 }
 
 // Modal Handlers
+
+function buildApiErrorDetails(err, fallback = 'Unknown error') {
+  const message = typeof err?.message === 'string' ? err.message.trim() : '';
+  const code = typeof err?.code === 'string' ? err.code.trim() : '';
+  const details = [message || fallback];
+  if (code) details.push(`code: ${code}`);
+  return details.join(' | ');
+}
+
+async function parseApiError(res, fallback = 'Request failed') {
+  const text = await res.text().catch(() => '');
+  if (!text) return { message: fallback };
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === 'object') return parsed;
+  } catch (_) {
+    // Graceful fallback for non-JSON responses.
+  }
+  return { message: text.trim() || fallback };
+}
 function openPostModal(mediaType = null) {
   postModal.classList.add('show');
   backdrop.classList.add('show');
@@ -176,8 +196,8 @@ publishPostBtn?.addEventListener('click', async () => {
     renderPosts(window.hireHubState.user.posts);
     closePostModalFn();
   } else {
-    const err = await res.json().catch(() => ({}));
-    alert(`Failed to publish post${err.message ? `: ${err.message}` : ''}`);
+    const err = await parseApiError(res, 'Please try again.');
+    alert(`Failed to publish post: ${buildApiErrorDetails(err, 'Please try again.')}`);
   }
 });
 
@@ -223,8 +243,8 @@ saveProfile?.addEventListener('click', async () => {
   };
   const res = await fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    return alert(`Failed to update profile${err.message ? `: ${err.message}` : ''}`);
+    const err = await parseApiError(res, 'Please review your changes and retry.');
+    return alert(`Failed to update profile: ${buildApiErrorDetails(err, 'Please review your changes and retry.')}`);
   }
   window.hireHubState.user = { ...currentUser, ...payload };
   renderUser(window.hireHubState.user);
