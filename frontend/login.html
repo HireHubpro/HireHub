@@ -6,7 +6,7 @@
     <title>HireHub | Log In</title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
-  <body>
+  <body class="login-page">
     <main class="phone screen">
       <a href="/index.html" class="back-btn" aria-label="Go back">←</a>
       <h2 class="screen-title">Log in to HireHub</h2>
@@ -14,7 +14,7 @@
 
       <form id="loginForm" class="form">
         <label>Email <input type="email" name="email" placeholder="Enter your email" required /></label>
-        <label>Password <input type="password" name="password" placeholder="Enter your password" required /></label>
+        <label>Password <div class="password-field"><input type="password" name="password" placeholder="Enter your password" required /><button type="button" class="password-toggle" data-toggle-password>Show</button></div></label>
         <button class="btn btn-primary" type="submit">Log In</button>
       </form>
 

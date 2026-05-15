@@ -117,3 +117,14 @@ byId('loginForm')?.addEventListener('submit', async (e) => {
     errorEl.textContent = err.message;
   }
 });
+
+
+document.querySelectorAll('[data-toggle-password]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const input = button.closest('.password-field')?.querySelector('input[type="password"], input[type="text"]');
+    if (!input) return;
+    const nextType = input.type === 'password' ? 'text' : 'password';
+    input.type = nextType;
+    button.textContent = nextType === 'password' ? 'Show' : 'Hide';
+  });
+});
