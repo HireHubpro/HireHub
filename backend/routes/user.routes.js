@@ -7,6 +7,28 @@ router.use(authMiddleware);
 
 const PROFILE_ITEM_TYPES = new Set(['experience', 'education', 'skills']);
 
+
+function logDbError(req, err, marker = 'HIREHUB_DB_ERROR') {
+  console.error(marker, {
+    route: req.originalUrl || req.baseUrl || req.path,
+    method: req.method,
+    code: err?.code || null,
+    errno: err?.errno || null,
+    sqlState: err?.sqlState || null,
+    sqlMessage: err?.sqlMessage || null,
+  });
+}
+
+function sendServerError(req, res, err, marker) {
+  logDbError(req, err, marker);
+  const response = { message: 'Server error' };
+  if (process.env.NODE_ENV !== 'production' && err?.code) {
+    response.code = err.code;
+  }
+  return res.status(500).json(response);
+}
+
+
 function splitProfileItems(rows) {
   return rows.reduce(
     (acc, row) => {
@@ -60,7 +82,7 @@ router.get('/me', async (req, res) => {
       posts,
     });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -110,7 +132,7 @@ router.put('/profile', async (req, res) => {
     return res.json({ message: 'Profile updated' });
   } catch (err) {
     await connection.rollback();
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   } finally {
     connection.release();
   }
@@ -151,7 +173,7 @@ router.post('/posts', async (req, res) => {
       createdAt: new Date().toISOString(),
     });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -173,7 +195,7 @@ router.put('/posts/:id', async (req, res) => {
     }
     return res.json({ message: 'Post updated' });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -211,7 +233,7 @@ router.put('/posts/:id/like', async (req, res) => {
     return res.json({ message: 'Like toggled', likes: post.likes, liked: existing.length === 0 });
   } catch (err) {
     await connection.rollback();
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   } finally {
     connection.release();
   }
@@ -248,7 +270,7 @@ router.post('/posts/:id/comment', async (req, res) => {
     return res.status(201).json({ id: result.insertId, content, parentId, createdAt: new Date() });
   } catch (err) {
     await connection.rollback();
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   } finally {
     connection.release();
   }
@@ -267,7 +289,7 @@ router.get('/posts/:id/comments', async (req, res) => {
     );
     return res.json(comments);
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -292,7 +314,7 @@ router.post('/posts/:id/share', async (req, res) => {
 
     return res.json({ message: 'Post shared' });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -301,7 +323,7 @@ router.get('/users', async (req, res) => {
     const [users] = await pool.query('SELECT id, full_name as fullName, email FROM users WHERE id != ?', [req.user.userId]);
     return res.json(users);
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -314,7 +336,7 @@ router.get('/notifications', async (req, res) => {
     );
     return res.json({ unread, items });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -323,7 +345,7 @@ router.put('/notifications/read', async (req, res) => {
     await pool.query('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', [req.user.userId]);
     return res.json({ message: 'Notifications marked as read' });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -340,7 +362,7 @@ router.delete('/posts/:id', async (req, res) => {
     }
     return res.json({ message: 'Post deleted' });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -355,7 +377,7 @@ router.delete('/comments/:id', async (req, res) => {
 
     return res.json({ message: 'Comment deleted' });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 
@@ -367,7 +389,7 @@ router.put('/comments/:id', async (req, res) => {
     if (!result.affectedRows) return res.status(404).json({ message: 'Comment not found or unauthorized' });
     return res.json({ message: 'Comment updated' });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    return sendServerError(req, res, err);
   }
 });
 

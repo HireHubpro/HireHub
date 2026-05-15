@@ -13,6 +13,18 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 
 const app = express();
+
+function logDbError(req, err, marker = 'HIREHUB_DB_ERROR') {
+  console.error(marker, {
+    route: req?.originalUrl || req?.baseUrl || req?.path || 'unknown',
+    method: req?.method || 'unknown',
+    code: err?.code || null,
+    errno: err?.errno || null,
+    sqlState: err?.sqlState || null,
+    sqlMessage: err?.sqlMessage || null,
+  });
+}
+
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -29,7 +41,12 @@ app.use((err, _req, res, next) => {
     return res.status(413).json({ message: 'Uploaded file is too large. Please choose a smaller file.' });
   }
   if (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    logDbError(_req, err, 'HIREHUB_SERVER_ERROR');
+    const response = { message: 'Server error' };
+    if (process.env.NODE_ENV !== 'production' && err?.code) {
+      response.code = err.code;
+    }
+    return res.status(500).json(response);
   }
   return next();
 });
