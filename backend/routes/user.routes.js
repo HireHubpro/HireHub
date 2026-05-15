@@ -71,18 +71,31 @@ router.put('/profile', async (req, res) => {
 
   try {
     await connection.beginTransaction();
-    await connection.query(
-      `INSERT INTO profiles (user_id, headline, location, about, resume_url, avatar_url, cover_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-         headline = VALUES(headline),
-         location = VALUES(location),
-         about = VALUES(about),
-         resume_url = VALUES(resume_url),
-         avatar_url = VALUES(avatar_url),
-         cover_url = VALUES(cover_url)`,
-      [req.user.userId, headline || '', location || '', about || '', resumeUrl || null, avatarUrl || null, coverUrl || null]
-    );
+    try {
+      await connection.query(
+        `INSERT INTO profiles (user_id, headline, location, about, resume_url, avatar_url, cover_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+           headline = VALUES(headline),
+           location = VALUES(location),
+           about = VALUES(about),
+           resume_url = VALUES(resume_url),
+           avatar_url = VALUES(avatar_url),
+           cover_url = VALUES(cover_url)`,
+        [req.user.userId, headline || '', location || '', about || '', resumeUrl || null, avatarUrl || null, coverUrl || null]
+      );
+    } catch (profileErr) {
+      if (profileErr?.code !== 'ER_BAD_FIELD_ERROR') throw profileErr;
+      await connection.query(
+        `INSERT INTO profiles (user_id, headline, location, about)
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+           headline = VALUES(headline),
+           location = VALUES(location),
+           about = VALUES(about)`,
+        [req.user.userId, headline || '', location || '', about || '']
+      );
+    }
 
     for (const [type, values] of Object.entries(profileItems)) {
       if (!Array.isArray(values)) continue;
@@ -113,10 +126,19 @@ router.post('/posts', async (req, res) => {
   }
 
   try {
-    const [result] = await pool.query(
-      'INSERT INTO posts (user_id, content, media_url, media_type, likes, comments, shares) VALUES (?, ?, ?, ?, 0, 0, 0)',
-      [req.user.userId, content, mediaUrl, mediaType]
-    );
+    let result;
+    try {
+      [result] = await pool.query(
+        'INSERT INTO posts (user_id, content, media_url, media_type, likes, comments, shares) VALUES (?, ?, ?, ?, 0, 0, 0)',
+        [req.user.userId, content, mediaUrl, mediaType]
+      );
+    } catch (postErr) {
+      if (postErr?.code !== 'ER_BAD_FIELD_ERROR') throw postErr;
+      [result] = await pool.query(
+        'INSERT INTO posts (user_id, content, likes, comments, shares) VALUES (?, ?, 0, 0, 0)',
+        [req.user.userId, content]
+      );
+    }
     return res.status(201).json({
       id: result.insertId,
       user_id: req.user.userId,
