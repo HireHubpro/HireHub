@@ -33,7 +33,7 @@ router.get('/me', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const [[items], [posts]] = await Promise.all([
+    const [itemsResult, postsResult] = await Promise.allSettled([
       pool.query(
         `SELECT item_type, item_value
          FROM profile_items
@@ -50,6 +50,9 @@ router.get('/me', async (req, res) => {
         []
       ),
     ]);
+
+    const items = itemsResult.status === 'fulfilled' ? itemsResult.value[0] : [];
+    const posts = postsResult.status === 'fulfilled' ? postsResult.value[0] : [];
 
     return res.json({
       ...rows[0],
