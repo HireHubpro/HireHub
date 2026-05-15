@@ -134,7 +134,8 @@ publishPostBtn?.addEventListener('click', async () => {
     renderPosts(window.hireHubState.user.posts);
     closePostModalFn();
   } else {
-    alert('Failed to publish post');
+    const err = await res.json().catch(() => ({}));
+    alert(`Failed to publish post${err.message ? `: ${err.message}` : ''}`);
   }
 });
 
@@ -179,7 +180,10 @@ saveProfile?.addEventListener('click', async () => {
     skills: currentUser.skills || [],
   };
   const res = await fetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
-  if (!res.ok) return alert('Failed to update profile');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    return alert(`Failed to update profile${err.message ? `: ${err.message}` : ''}`);
+  }
   window.hireHubState.user = { ...currentUser, ...payload };
   renderUser(window.hireHubState.user);
   alert('Profile updated');

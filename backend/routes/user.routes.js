@@ -72,8 +72,16 @@ router.put('/profile', async (req, res) => {
   try {
     await connection.beginTransaction();
     await connection.query(
-      'UPDATE profiles SET headline = ?, location = ?, about = ?, resume_url = ?, avatar_url = ?, cover_url = ? WHERE user_id = ?',
-      [headline || '', location || '', about || '', resumeUrl || null, avatarUrl || null, coverUrl || null, req.user.userId]
+      `INSERT INTO profiles (user_id, headline, location, about, resume_url, avatar_url, cover_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         headline = VALUES(headline),
+         location = VALUES(location),
+         about = VALUES(about),
+         resume_url = VALUES(resume_url),
+         avatar_url = VALUES(avatar_url),
+         cover_url = VALUES(cover_url)`,
+      [req.user.userId, headline || '', location || '', about || '', resumeUrl || null, avatarUrl || null, coverUrl || null]
     );
 
     for (const [type, values] of Object.entries(profileItems)) {
