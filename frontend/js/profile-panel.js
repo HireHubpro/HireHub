@@ -44,6 +44,42 @@ function fileToDataUrl(file) {
   });
 }
 
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function imageFileToOptimizedDataUrl(file, { maxSide = 1600, quality = 0.82 } = {}) {
+  if (!file?.type?.startsWith('image/')) return fileToDataUrl(file);
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+  return blob ? blobToDataUrl(blob) : fileToDataUrl(file);
+}
+
+function estimateDataUrlBytes(dataUrl) {
+  const payload = String(dataUrl || '').split(',')[1] || '';
+  return Math.floor((payload.length * 3) / 4);
+}
+
+function ensurePayloadSize(dataUrl, label) {
+  const maxBytes = 12 * 1024 * 1024;
+  if (estimateDataUrlBytes(dataUrl) > maxBytes) {
+    throw new Error(`${label} is too large. Please upload a smaller file.`);
+  }
+}
+
 // Modal Handlers
 function openPostModal(mediaType = null) {
   postModal.classList.add('show');
@@ -88,8 +124,10 @@ modalVideoBtn?.addEventListener('click', () => {
 modalMediaInput?.addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
-  const url = await fileToDataUrl(file);
-  const type = file.type.startsWith('video') ? 'video' : 'image';
+  try {
+    const url = file.type.startsWith('image') ? await imageFileToOptimizedDataUrl(file, { maxSide: 1920, quality: 0.8 }) : await fileToDataUrl(file);
+    ensurePayloadSize(url, 'Selected media');
+    const type = file.type.startsWith('video') ? 'video' : 'image';
   currentMedia = { url, type };
 
   mediaPreview.innerHTML = '<button class="remove-media" id="removeMediaBtn">✕</button>';
@@ -103,8 +141,12 @@ modalMediaInput?.addEventListener('change', async (e) => {
     video.controls = true;
     mediaPreview.appendChild(video);
   }
-  mediaPreview.style.display = 'block';
-  document.getElementById('removeMediaBtn').onclick = clearMediaPreview;
+    mediaPreview.style.display = 'block';
+    document.getElementById('removeMediaBtn').onclick = clearMediaPreview;
+  } catch (err) {
+    alert(err.message || 'Unable to process this file. Please try a smaller one.');
+    e.target.value = '';
+  }
 });
 
 publishPostBtn?.addEventListener('click', async () => {
@@ -575,22 +617,43 @@ document.getElementById('coverUploadBtn')?.addEventListener('click', () => docum
 document.getElementById('avatarUploadInput')?.addEventListener('change', async (e) => {
   const f = e.target.files?.[0];
   if (!f) return;
-  window.hireHubState.user.avatarUrl = await fileToDataUrl(f);
-  renderUser(window.hireHubState.user);
+  try {
+    const optimizedAvatar = await imageFileToOptimizedDataUrl(f, { maxSide: 512, quality: 0.8 });
+    ensurePayloadSize(optimizedAvatar, 'Avatar image');
+    window.hireHubState.user.avatarUrl = optimizedAvatar;
+    renderUser(window.hireHubState.user);
+  } catch (err) {
+    alert(err.message || 'Unable to process avatar image.');
+    e.target.value = '';
+  }
 });
 
 document.getElementById('coverUploadInput')?.addEventListener('change', async (e) => {
   const f = e.target.files?.[0];
   if (!f) return;
-  window.hireHubState.user.coverUrl = await fileToDataUrl(f);
-  renderUser(window.hireHubState.user);
+  try {
+    const optimizedCover = await imageFileToOptimizedDataUrl(f, { maxSide: 1600, quality: 0.82 });
+    ensurePayloadSize(optimizedCover, 'Banner image');
+    window.hireHubState.user.coverUrl = optimizedCover;
+    renderUser(window.hireHubState.user);
+  } catch (err) {
+    alert(err.message || 'Unable to process banner image.');
+    e.target.value = '';
+  }
 });
 
 document.getElementById('resumeUploadInput')?.addEventListener('change', async (e) => {
   const f = e.target.files?.[0];
   if (!f) return;
-  window.hireHubState.user.resumeUrl = await fileToDataUrl(f);
-  renderUser(window.hireHubState.user);
+  try {
+    const resumeDataUrl = await fileToDataUrl(f);
+    ensurePayloadSize(resumeDataUrl, 'Resume');
+    window.hireHubState.user.resumeUrl = resumeDataUrl;
+    renderUser(window.hireHubState.user);
+  } catch (err) {
+    alert(err.message || 'Unable to process resume file.');
+    e.target.value = '';
+  }
 });
 
 async function refreshNotificationsIfAvailable() {

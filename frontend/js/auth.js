@@ -125,6 +125,9 @@ document.querySelectorAll('[data-toggle-password]').forEach((button) => {
     if (!input) return;
     const nextType = input.type === 'password' ? 'text' : 'password';
     input.type = nextType;
-    button.textContent = nextType === 'password' ? 'Show' : 'Hide';
+    const isHidden = nextType === 'password';
+    button.textContent = isHidden ? '👁' : '🙈';
+    button.setAttribute('aria-label', isHidden ? 'Show password' : 'Hide password');
+    button.setAttribute('title', isHidden ? 'Show password' : 'Hide password');
   });
 });
