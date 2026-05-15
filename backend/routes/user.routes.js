@@ -111,9 +111,10 @@ router.get('/me', async (req, res) => {
 router.put('/profile', async (req, res) => {
   const { headline, location, about, resumeUrl, avatarUrl, coverUrl, experience, education, skills } = req.body;
   const profileItems = { experience, education, skills };
-  const connection = await pool.getConnection();
+  let connection;
 
   try {
+    connection = await pool.getConnection();
     await connection.beginTransaction();
     try {
       await connection.query(
@@ -159,11 +160,11 @@ router.put('/profile', async (req, res) => {
     await connection.commit();
     return res.json({ message: 'Profile updated', warnings: [...new Set(warnings)] });
   } catch (err) {
-    await connection.rollback();
+    await connection?.rollback();
     logDbError('PUT /api/user/profile', err);
     return res.status(500).json({ message: 'Server error', error: err.message, code: err?.code });
   } finally {
-    connection.release();
+    connection?.release();
   }
 });
 
@@ -262,10 +263,10 @@ router.put('/posts/:id/like', async (req, res) => {
     const [[post]] = await pool.query('SELECT likes FROM posts WHERE id = ?', [postId]);
     return res.json({ message: 'Like toggled', likes: post.likes, liked: existing.length === 0 });
   } catch (err) {
-    await connection.rollback();
+    await connection?.rollback();
     return res.status(500).json({ message: 'Server error', error: err.message });
   } finally {
-    connection.release();
+    connection?.release();
   }
 });
 
@@ -299,10 +300,10 @@ router.post('/posts/:id/comment', async (req, res) => {
     await connection.commit();
     return res.status(201).json({ id: result.insertId, content, parentId, createdAt: new Date() });
   } catch (err) {
-    await connection.rollback();
+    await connection?.rollback();
     return res.status(500).json({ message: 'Server error', error: err.message });
   } finally {
-    connection.release();
+    connection?.release();
   }
 });
 
