@@ -184,16 +184,11 @@ router.post('/posts', async (req, res) => {
         [req.user.userId, content, mediaUrl, mediaType]
       );
     } catch (postErr) {
-      if (!isLegacySchemaError(postErr)) throw postErr;
-      try {
-        [result] = await pool.query(
-          'INSERT INTO posts (user_id, content, likes, comments, shares) VALUES (?, ?, 0, 0, 0)',
-          [req.user.userId, content]
-        );
-      } catch (legacyErr) {
-        if (!isLegacySchemaError(legacyErr)) throw legacyErr;
-        [result] = await pool.query('INSERT INTO posts (user_id, content) VALUES (?, ?)', [req.user.userId, content]);
-      }
+      if (postErr?.code !== 'ER_BAD_FIELD_ERROR') throw postErr;
+      [result] = await pool.query(
+        'INSERT INTO posts (user_id, content, likes, comments, shares) VALUES (?, ?, 0, 0, 0)',
+        [req.user.userId, content]
+      );
     }
     return res.status(201).json({
       id: result.insertId,
