@@ -129,7 +129,7 @@ router.put('/profile', async (req, res) => {
         [req.user.userId, headline || '', location || '', about || '', resumeUrl || null, avatarUrl || null, coverUrl || null]
       );
     } catch (profileErr) {
-      if (profileErr?.code !== 'ER_BAD_FIELD_ERROR') throw profileErr;
+      if (!isLegacySchemaError(profileErr)) throw profileErr;
       await connection.query(
         `INSERT INTO profiles (user_id, headline, location, about)
          VALUES (?, ?, ?, ?)
@@ -184,7 +184,7 @@ router.post('/posts', async (req, res) => {
         [req.user.userId, content, mediaUrl, mediaType]
       );
     } catch (postErr) {
-      if (postErr?.code !== 'ER_BAD_FIELD_ERROR') throw postErr;
+      if (!isLegacySchemaError(postErr)) throw postErr;
       [result] = await pool.query(
         'INSERT INTO posts (user_id, content, likes, comments, shares) VALUES (?, ?, 0, 0, 0)',
         [req.user.userId, content]
