@@ -82,23 +82,12 @@ function ensurePayloadSize(dataUrl, label) {
 
 // Modal Handlers
 
-function getApiErrorMessage(message, code, fallback) {
-  const normalizedCode = String(code || '').trim();
-  const normalizedMessage = String(message || '').trim();
-
-  if (!normalizedMessage || /^server error$/i.test(normalizedMessage)) {
-    if (normalizedCode === 'ER_BAD_FIELD_ERROR') {
-      return 'A required field is missing or misconfigured. Please try again in a moment.';
-    }
-  }
-
-  return normalizedMessage || fallback;
-}
-
 function buildApiErrorDetails(err, fallback = 'Unknown error') {
-  const message = getApiErrorMessage(err?.message, err?.code, fallback);
+  const message = typeof err?.message === 'string' ? err.message.trim() : '';
   const code = typeof err?.code === 'string' ? err.code.trim() : '';
-  return code ? `${message} (Ref: ${code})` : message;
+  const details = [message || fallback];
+  if (code) details.push(`code: ${code}`);
+  return details.join(' | ');
 }
 
 async function parseApiError(res, fallback = 'Request failed') {

@@ -6,10 +6,56 @@ const router = express.Router();
 router.use(authMiddleware);
 
 const PROFILE_ITEM_TYPES = new Set(['experience', 'education', 'skills']);
+const MAX_INLINE_URL_BYTES = {
+  avatarUrl: 512 * 1024,
+  coverUrl: 1024 * 1024,
+  mediaUrl: 5 * 1024 * 1024,
+};
 
 
 function isLegacySchemaError(err) {
   return ['ER_BAD_FIELD_ERROR', 'ER_NO_SUCH_TABLE', 'ER_TRUNCATED_WRONG_VALUE_FOR_FIELD'].includes(err?.code);
+}
+
+function estimateDataUrlBytes(value) {
+  if (typeof value !== 'string' || !value) return 0;
+  const parts = value.split(',', 2);
+  if (parts.length < 2) return 0;
+  const [meta, payload] = parts;
+  if (!/^data:/i.test(meta)) return 0;
+
+  if (/;base64/i.test(meta)) {
+    const normalized = payload.replace(/\s/g, '');
+    const padding = normalized.endsWith('==') ? 2 : normalized.endsWith('=') ? 1 : 0;
+    return Math.max(0, Math.floor((normalized.length * 3) / 4) - padding);
+  }
+
+  try {
+    return Buffer.byteLength(decodeURIComponent(payload), 'utf8');
+  } catch (_err) {
+    return Buffer.byteLength(payload, 'utf8');
+  }
+}
+
+function validateInlinePayloadSize(fieldName, value, maxBytes) {
+  const estimatedBytes = estimateDataUrlBytes(value);
+  if (estimatedBytes <= maxBytes) return null;
+  return {
+    status: 413,
+    message: `${fieldName} is too large. Please upload a smaller file.`,
+    estimatedBytes,
+    maxBytes,
+  };
+}
+
+function mapPayloadDbError(err) {
+  if (err?.code === 'ER_NET_PACKET_TOO_LARGE') {
+    return { status: 413, message: 'Uploaded content is too large. Please reduce file size and try again.' };
+  }
+  if (err?.code === 'ER_DATA_TOO_LONG') {
+    return { status: 400, message: 'One or more fields exceed allowed length. Please shorten and try again.' };
+  }
+  return null;
 }
 
 function logDbError(route, err) {
@@ -111,6 +157,14 @@ router.get('/me', async (req, res) => {
 router.put('/profile', async (req, res) => {
   const { headline, location, about, resumeUrl, avatarUrl, coverUrl, experience, education, skills } = req.body;
   const profileItems = { experience, education, skills };
+  const avatarPayloadError = validateInlinePayloadSize('avatarUrl', avatarUrl, MAX_INLINE_URL_BYTES.avatarUrl);
+  if (avatarPayloadError) {
+    return res.status(avatarPayloadError.status).json({ message: avatarPayloadError.message });
+  }
+  const coverPayloadError = validateInlinePayloadSize('coverUrl', coverUrl, MAX_INLINE_URL_BYTES.coverUrl);
+  if (coverPayloadError) {
+    return res.status(coverPayloadError.status).json({ message: coverPayloadError.message });
+  }
   const connection = await pool.getConnection();
 
   try {
@@ -160,6 +214,10 @@ router.put('/profile', async (req, res) => {
     return res.json({ message: 'Profile updated', warnings: [...new Set(warnings)] });
   } catch (err) {
     await connection.rollback();
+    const payloadDbError = mapPayloadDbError(err);
+    if (payloadDbError) {
+      return res.status(payloadDbError.status).json({ message: payloadDbError.message, code: err?.code });
+    }
     logDbError('PUT /api/user/profile', err);
     return res.status(500).json({ message: 'Server error', error: err.message, code: err?.code });
   } finally {
@@ -174,6 +232,10 @@ router.post('/posts', async (req, res) => {
 
   if (!content && !mediaUrl) {
     return res.status(400).json({ message: 'Post content or media is required' });
+  }
+  const mediaPayloadError = validateInlinePayloadSize('mediaUrl', mediaUrl, MAX_INLINE_URL_BYTES.mediaUrl);
+  if (mediaPayloadError) {
+    return res.status(mediaPayloadError.status).json({ message: mediaPayloadError.message });
   }
 
   try {
@@ -202,6 +264,10 @@ router.post('/posts', async (req, res) => {
       createdAt: new Date().toISOString(),
     });
   } catch (err) {
+    const payloadDbError = mapPayloadDbError(err);
+    if (payloadDbError) {
+      return res.status(payloadDbError.status).json({ message: payloadDbError.message, code: err?.code });
+    }
     logDbError('POST /api/user/posts', err);
     return res.status(500).json({ message: 'Server error', error: err.message, code: err?.code });
   }
