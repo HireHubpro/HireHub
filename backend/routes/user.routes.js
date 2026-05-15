@@ -7,6 +7,21 @@ router.use(authMiddleware);
 
 const PROFILE_ITEM_TYPES = new Set(['experience', 'education', 'skills']);
 
+
+function isLegacySchemaError(err) {
+  return ['ER_BAD_FIELD_ERROR', 'ER_NO_SUCH_TABLE', 'ER_TRUNCATED_WRONG_VALUE_FOR_FIELD'].includes(err?.code);
+}
+
+function logDbError(route, err) {
+  console.error('HIREHUB_DB_ERROR', {
+    route,
+    code: err?.code,
+    errno: err?.errno,
+    sqlState: err?.sqlState,
+    sqlMessage: err?.sqlMessage || err?.message,
+  });
+}
+
 function splitProfileItems(rows) {
   return rows.reduce(
     (acc, row) => {
@@ -21,13 +36,26 @@ function splitProfileItems(rows) {
 
 router.get('/me', async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      `SELECT u.id, u.full_name AS fullName, u.email, u.role, p.headline, p.location, p.about, p.resume_url AS resumeUrl, p.avatar_url AS avatarUrl, p.cover_url AS coverUrl
-       FROM users u
-       LEFT JOIN profiles p ON p.user_id = u.id
-       WHERE u.id = ?`,
-      [req.user.userId]
-    );
+    let rows;
+    try {
+      [rows] = await pool.query(
+        `SELECT u.id, u.full_name AS fullName, u.email, u.role, p.headline, p.location, p.about, p.resume_url AS resumeUrl, p.avatar_url AS avatarUrl, p.cover_url AS coverUrl
+         FROM users u
+         LEFT JOIN profiles p ON p.user_id = u.id
+         WHERE u.id = ?`,
+        [req.user.userId]
+      );
+    } catch (profileErr) {
+      if (!isLegacySchemaError(profileErr)) throw profileErr;
+      [rows] = await pool.query(
+        `SELECT u.id, u.full_name AS fullName, u.email, u.role, p.headline, p.location, p.about
+         FROM users u
+         LEFT JOIN profiles p ON p.user_id = u.id
+         WHERE u.id = ?`,
+        [req.user.userId]
+      );
+      rows = rows.map((r) => ({ ...r, resumeUrl: '', avatarUrl: '', coverUrl: '' }));
+    }
 
     if (!rows.length) {
       return res.status(404).json({ message: 'User not found' });
@@ -41,14 +69,29 @@ router.get('/me', async (req, res) => {
          ORDER BY id DESC`,
         [req.user.userId]
       ),
-      pool.query(
-        `SELECT p.id, p.user_id, p.content, p.media_url, p.media_type, p.likes, p.comments, p.shares, p.created_at AS createdAt, u.full_name as fullName, pr.avatar_url as avatarUrl, pr.headline
-         FROM posts p
-         JOIN users u ON p.user_id = u.id
-         LEFT JOIN profiles pr ON pr.user_id = u.id
-         ORDER BY p.created_at DESC`,
-        []
-      ),
+      (async () => {
+        try {
+          return await pool.query(
+            `SELECT p.id, p.user_id, p.content, p.media_url, p.media_type, p.likes, p.comments, p.shares, p.created_at AS createdAt, u.full_name as fullName, pr.avatar_url as avatarUrl, pr.headline
+             FROM posts p
+             JOIN users u ON p.user_id = u.id
+             LEFT JOIN profiles pr ON pr.user_id = u.id
+             ORDER BY p.created_at DESC`,
+            []
+          );
+        } catch (postErr) {
+          if (!isLegacySchemaError(postErr)) throw postErr;
+          const [legacyPosts] = await pool.query(
+            `SELECT p.id, p.user_id, p.content, p.likes, p.comments, p.shares, p.created_at AS createdAt, u.full_name as fullName, pr.headline
+             FROM posts p
+             JOIN users u ON p.user_id = u.id
+             LEFT JOIN profiles pr ON pr.user_id = u.id
+             ORDER BY p.created_at DESC`,
+            []
+          );
+          return [legacyPosts.map((post) => ({ ...post, media_url: null, media_type: null, avatarUrl: post.avatarUrl || '' }))];
+        }
+      })(),
     ]);
 
     const items = itemsResult.status === 'fulfilled' ? itemsResult.value[0] : [];
@@ -60,7 +103,8 @@ router.get('/me', async (req, res) => {
       posts,
     });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    logDbError('GET /api/user/me', err);
+    return res.status(500).json({ message: 'Server error', error: err.message, code: err?.code });
   }
 });
 
@@ -97,20 +141,27 @@ router.put('/profile', async (req, res) => {
       );
     }
 
+    const warnings = [];
     for (const [type, values] of Object.entries(profileItems)) {
       if (!Array.isArray(values)) continue;
-      await connection.query('DELETE FROM profile_items WHERE user_id = ? AND item_type = ?', [req.user.userId, type]);
-      const cleanValues = [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
-      if (!cleanValues.length) continue;
-      const inserts = cleanValues.map((value) => [req.user.userId, type, value]);
-      await connection.query('INSERT INTO profile_items (user_id, item_type, item_value) VALUES ?', [inserts]);
+      try {
+        await connection.query('DELETE FROM profile_items WHERE user_id = ? AND item_type = ?', [req.user.userId, type]);
+        const cleanValues = [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
+        if (!cleanValues.length) continue;
+        const inserts = cleanValues.map((value) => [req.user.userId, type, value]);
+        await connection.query('INSERT INTO profile_items (user_id, item_type, item_value) VALUES ?', [inserts]);
+      } catch (itemErr) {
+        if (!isLegacySchemaError(itemErr)) throw itemErr;
+        warnings.push('Profile items not saved on legacy schema');
+      }
     }
 
     await connection.commit();
-    return res.json({ message: 'Profile updated' });
+    return res.json({ message: 'Profile updated', warnings: [...new Set(warnings)] });
   } catch (err) {
     await connection.rollback();
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    logDbError('PUT /api/user/profile', err);
+    return res.status(500).json({ message: 'Server error', error: err.message, code: err?.code });
   } finally {
     connection.release();
   }
@@ -151,7 +202,8 @@ router.post('/posts', async (req, res) => {
       createdAt: new Date().toISOString(),
     });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error', error: err.message });
+    logDbError('POST /api/user/posts', err);
+    return res.status(500).json({ message: 'Server error', error: err.message, code: err?.code });
   }
 });
 
