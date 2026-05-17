@@ -224,34 +224,23 @@ router.put('/profile', async (req, res) => {
     connection.release();
   }
 });
-
+//added 18 may
 router.post('/posts', async (req, res) => {
   const content = String(req.body.content || '').trim();
-  const mediaUrl = req.body.mediaUrl || null;
+  const mediaUrl = req.body.mediaUrl || null; 
   const mediaType = req.body.mediaType || null;
 
   if (!content && !mediaUrl) {
     return res.status(400).json({ message: 'Post content or media is required' });
   }
-  const mediaPayloadError = validateInlinePayloadSize('mediaUrl', mediaUrl, MAX_INLINE_URL_BYTES.mediaUrl);
-  if (mediaPayloadError) {
-    return res.status(mediaPayloadError.status).json({ message: mediaPayloadError.message });
-  }
 
   try {
-    let result;
-    try {
-      [result] = await pool.query(
-        'INSERT INTO posts (user_id, content, media_url, media_type, likes, comments, shares) VALUES (?, ?, ?, ?, 0, 0, 0)',
-        [req.user.userId, content, mediaUrl, mediaType]
-      );
-    } catch (postErr) {
-      if (postErr?.code !== 'ER_BAD_FIELD_ERROR') throw postErr;
-      [result] = await pool.query(
-        'INSERT INTO posts (user_id, content, likes, comments, shares) VALUES (?, ?, 0, 0, 0)',
-        [req.user.userId, content]
-      );
-    }
+    // Inserts into both columns to ensure compatibility with your existing schema
+    const [result] = await pool.query(
+      'INSERT INTO posts (user_id, content, media_url, mediaUrl, media_type, likes, comments, shares) VALUES (?, ?, ?, ?, ?, 0, 0, 0)',
+      [req.user.userId, content, mediaUrl, mediaUrl, mediaType]
+    );
+
     return res.status(201).json({
       id: result.insertId,
       user_id: req.user.userId,
@@ -264,15 +253,11 @@ router.post('/posts', async (req, res) => {
       createdAt: new Date().toISOString(),
     });
   } catch (err) {
-    const payloadDbError = mapPayloadDbError(err);
-    if (payloadDbError) {
-      return res.status(payloadDbError.status).json({ message: payloadDbError.message, code: err?.code });
-    }
     logDbError('POST /api/user/posts', err);
-    return res.status(500).json({ message: 'Server error', error: err.message, code: err?.code });
+    return res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
-
+//18may
 router.put('/posts/:id', async (req, res) => {
   const postId = Number(req.params.id);
   const content = String(req.body.content || '').trim();
