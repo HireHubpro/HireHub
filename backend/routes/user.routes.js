@@ -280,34 +280,43 @@ router.put('/posts/:id', async (req, res) => {
   }
 });
 
-router.put('/posts/:id/like', async (req, res) => {
+router.post('/posts/:id/comment', async (req, res) => {
   const postId = Number(req.params.id);
-  if (!postId) {
-    return res.status(400).json({ message: 'Valid post id is required' });
+  const { content, parentId } = req.body;
+  
+  if (!postId || !content) {
+    return res.status(400).json({ message: 'Post id and comment content are required' });
   }
 
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
-    const [existing] = await connection.query('SELECT id FROM post_likes WHERE post_id = ? AND user_id = ?', [postId, req.user.userId]);
+    // Saves the comment to the post_comments table
+    const [result] = await connection.query(
+      'INSERT INTO post_comments (post_id, user_id, parent_id, content) VALUES (?, ?, ?, ?)',
+      [postId, req.user.userId, parentId || null, content]
+    );
 
-    if (existing.length > 0) {
-      await connection.query('DELETE FROM post_likes WHERE post_id = ? AND user_id = ?', [postId, req.user.userId]);
-      await connection.query('UPDATE posts SET likes = GREATEST(0, likes - 1) WHERE id = ?', [postId]);
-    } else {
-      await connection.query('INSERT INTO post_likes (post_id, user_id) VALUES (?, ?)', [postId, req.user.userId]);
-      await connection.query('UPDATE posts SET likes = likes + 1 WHERE id = ?', [postId]);
+    // Updates the count in the posts table
+    await connection.query('UPDATE posts SET comments = comments + 1 WHERE id = ?', [postId]);
 
-      const [[postOwner]] = await connection.query('SELECT user_id FROM posts WHERE id = ?', [postId]);
-      if (postOwner && postOwner.user_id !== req.user.userId) {
-        await connection.query('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)', [
-          postOwner.user_id,
-          'post_like',
-          `Your post #${postId} received a new like.`
-        ]);
-      }
-    }
+    await connection.commit();
+    return res.status(201).json({ 
+        id: result.insertId, 
+        content, 
+        postId, 
+        parentId, 
+        createdAt: new Date() 
+    });
+  } catch (err) {
+    await connection.rollback();
+    logDbError('POST /comment', err);
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  } finally {
+    connection.release();
+  }
+});
 
     await connection.commit();
     const [[post]] = await pool.query('SELECT likes FROM posts WHERE id = ?', [postId]);
