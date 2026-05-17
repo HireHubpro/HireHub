@@ -302,6 +302,7 @@ router.post('/posts/:id/comment', async (req, res) => {
     await connection.query('UPDATE posts SET comments = comments + 1 WHERE id = ?', [postId]);
 
     await connection.commit();
+    
     return res.status(201).json({ 
         id: result.insertId, 
         content, 
